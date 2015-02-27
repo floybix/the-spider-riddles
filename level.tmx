@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="90" height="70" tilewidth="32" tileheight="32" nextobjectid="1">
+ <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16">
+  <image source="tiles.png" width="400" height="224"/>
+ </tileset>
+ <tileset firstgid="351" name="terrain_atlas" tilewidth="32" tileheight="32">
+  <image source="../../Downloads/lpc-tile-atlas/terrain_atlas.png" width="1024" height="1024"/>
+  <terraintypes>
+   <terrain name="Path" tile="112"/>
+   <terrain name="Water" tile="394"/>
+   <terrain name="Caves" tile="33"/>
+   <terrain name="Lava" tile="304"/>
+   <terrain name="pits" tile="121"/>
+   <terrain name="Walls" tile="853"/>
+  </terraintypes>
+  <tile id="0" terrain=",,,2"/>
+  <tile id="1" terrain=",,2,2"/>
+  <tile id="2" terrain=",,2,"/>
+  <tile id="3" terrain=",2,2,2"/>
+  <tile id="4" terrain="2,,2,2"/>
+  <tile id="16" terrain="0,0,0,"/>
+  <tile id="17" terrain="0,0,,0"/>
+  <tile id="25" terrain="4,4,4,"/>
+  <tile id="26" terrain="4,4,,4"/>
+  <tile id="32" terrain=",2,,2"/>
+  <tile id="33" terrain="2,2,2,2"/>
+  <tile id="34" terrain="2,,2,"/>
+  <tile id="35" terrain="2,2,,2"/>
+  <tile id="36" terrain="2,2,2,"/>
+  <tile id="48" terrain="0,,0,0"/>
+  <tile id="49" terrain=",0,0,0"/>
+  <tile id="57" terrain="4,,4,4"/>
+  <tile id="58" terrain=",4,4,4"/>
+  <tile id="64" terrain=",2,,"/>
+  <tile id="65" terrain="2,2,,"/>
+  <tile id="66" terrain="2,,,"/>
+  <tile id="67" terrain=",2,,2"/>
+  <tile id="68" terrain="2,,2,"/>
+  <tile id="79" terrain=",,,0"/>
+  <tile id="80" terrain=",,0,0"/>
+  <tile id="81" terrain=",,0,"/>
+  <tile id="88" terrain=",,,4"/>
+  <tile id="89" terrain=",,4,4"/>
+  <tile id="90" terrain=",,4,"/>
+  <tile id="99" terrain=",2,,2"/>
+  <tile id="100" terrain="2,,2,"/>
+  <tile id="111" terrain=",0,,0"/>
+  <tile id="112" terrain="0,0,0,0"/>
+  <tile id="113" terrain="0,,0,"/>
+  <tile id="120" terrain=",4,,4"/>
+  <tile id="121" terrain="4,4,4,4"/>
+  <tile id="122" terrain="4,,4,"/>
+  <tile id="143" terrain=",0,,"/>
+  <tile id="144" terrain="0,0,,"/>
+  <tile id="145" terrain="0,,,"/>
+  <tile id="152" terrain=",4,,"/>
+  <tile id="153" terrain="4,4,,"/>
+  <tile id="154" terrain="4,,,"/>
+  <tile id="162" terrain=",,,2"/>
+  <tile id="193" terrain=",2,,2"/>
+  <tile id="194" terrain="2,,2,"/>
+  <tile id="208" terrain="3,3,3,"/>
+  <tile id="209" terrain="3,3,,3"/>
+  <tile id="240" terrain="3,,3,3"/>
+  <tile id="241" terrain=",3,3,3"/>
+  <tile id="271" terrain=",,,3"/>
+  <tile id="272" terrain=",,3,3"/>
+  <tile id="273" terrain=",,3,"/>
+  <tile id="298" terrain="1,1,1,"/>
+  <tile id="299" terrain="1,1,,1"/>
+  <tile id="303" terrain=",3,,3"/>
+  <tile id="304" terrain="3,3,3,3"/>
+  <tile id="305" terrain="3,,3,"/>
+  <tile id="330" terrain="1,,1,1"/>
+  <tile id="331" terrain=",1,1,1"/>
+  <tile id="335" terrain=",3,,"/>
+  <tile id="336" terrain="3,3,,"/>
+  <tile id="337" terrain="3,,,"/>
+  <tile id="361" terrain=",,,1"/>
+  <tile id="362" terrain=",,1,1"/>
+  <tile id="363" terrain=",,1,"/>
+  <tile id="393" terrain=",1,,1"/>
+  <tile id="394" terrain="1,1,1,1"/>
+  <tile id="395" terrain="1,,1,"/>
+  <tile id="425" terrain=",1,,"/>
+  <tile id="426" terrain="1,1,,"/>
+  <tile id="427" terrain="1,,,"/>
+  <tile id="824" terrain="5,5,,"/>
+  <tile id="825" terrain="5,5,,"/>
+  <tile id="852" terrain=",5,5,5"/>
+  <tile id="853" terrain="5,5,5,5"/>
+  <tile id="854" terrain="5,,5,5"/>
+  <tile id="857" terrain=",,5,5"/>
+  <tile id="858" terrain=",,5,5"/>
+  <tile id="887" terrain="5,,5,"/>
+  <tile id="888" terrain=",5,,5"/>
+  <tile id="916" terrain="5,5,,5"/>
+  <tile id="918" terrain="5,5,5,"/>
+ </tileset>
+ <tileset firstgid="1375" name="base_out_atlas" tilewidth="32" tileheight="32">
+  <image source="../../Downloads/lpc-tile-atlas/base_out_atlas.png" width="1024" height="1024"/>
+ </tileset>
+ <layer name="grass" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJztwzEJAAAMA7AeE1b/qqpjkEB6SVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX1zb0SJyw==
+  </data>
+ </layer>
+ <layer name="path" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJztnFFygjAQQPFPvqwnUU+inkR7EuhF1F5E7UXU3qBrO5nuhARChM0m2TezX6KQBwm7hFgUQkocJkVxHChOk9CtcUcdMxVn2NdloLhG5FkdMxXK8w7i/mI8mHtWfbdGbabiHOG16Avuuzvi6yIXzwftOqbue7l4xtdyiLbm5jnEtYz3n4vnUO0MvX8qQrcz9P4pwPdA8TwelPdAW30d+jyPDXU+11Vfp+qZOs/oqq+518y+uIyLs2lRvEHMpzT7SxGXdi/A7xJiJZ69cWn3GvxuILbi2RuXdu/A7x7iPRLPKqfh9Lz/5nD/qcBvDfGBPPvOf6jcpvL8vil0n7H2mSP4PUF8Is9Dzn+8GrrPWD1fwO8V4svg2ZafUcQ+Mc938PuA+DZ4DtkW2zFwODYfZiXkzxDzsjm3JZ6HYwF+lxCrsjkui+fhWIPfDcS2/M9P1NiI8wYbptxExzWXwKTm2YQp33hlW3zuXPtLTp5xvmHjNmnmCq7bteX1OXmW8XlcXOrIodHHeVttySEXipm+Nah49qNvDZrqnMHYpDTuckY80yCeaRDPNIhnGsQzDcqzqks4zf+lhF6niO9x0J/JSt03LjfNtXgej9DrPHIh9DqPXJAcjwbxTIN4pgHXLDnnz23vOSovtm1cvEm+8UfbHJOq4+qOz3Xn+LzU4vkX0zsCpvczVG5m+6yyuMXf5ZDX4Wsg9Dhmcq/m8fqcFzxHGNqx/r5hjP2rzT2HtuhrAjnP//ZdF8Dh3QzT/8FwdIvxXRcQwrNpjIjB8RPfdQFjta2tf+n34VgcP+FW13X1L+7jsI0Q7+nZUPe1tr7F4Thjh1vfShXxTIN4pkE80yCezQzxH7v4mY94boKfLbwSlaEOEc/22rdPLfmMtmeB4rn/2rc+vyO1iCAIMfEDR/Cm2w==
+  </data>
+ </layer>
+ <layer name="pits" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJzt1kEKwjAQBdD21u1N7EnUk6SepHVnhATTkkpA3ch7MJBC3PwMH7sOAAAAAAAAAP7Xue+6S5xrvz3zXSFmOse59dtzTX6H2nib93K2pzhTca5l97w7xFnjjOnuXPxG1sfCLq85ZTlW9joUbzAVd9c0dzkfquWcO6SW8/4t7HGbWs65Q/Y5L0VnlD1z1Oe81Do3fx/1QCj2edAXTXI/nNN+tuS2pDuLjJuFogPs5u/kzvV/AQAAAAAAAAAAAAAAAIBPPAD1bljh
+  </data>
+ </layer>
+ <layer name="bridges" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJzt0DEOgCAQRNFN9v6XU06CxloaG4Vgz3vJdL+aCAAAAAAAAAAA4LFlxD5YyX/tu+Orto+Owc7st9ekAwAAAAAAAAAAAAAAAAAAWMkNGGsa+A==
+  </data>
+ </layer>
+ <layer name="Shark pool" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJzt1TEKwjAYhuHQOKg315voMdRBPYY6qKcwGQolFBSMlZbngW/oVl5+2hAAgLE4NiGcOjs3/36j6cmNt2mPzp46V9PecNlY53r6bri7je9HFfei6y5tn3Zw11WVnS9p17SbzlWVnZsYQkybRZ1rKjv3bZW2jP9+03H7pLNb/p7Ow5in78Fa50G8u2md68g3veisve/8/8vP/oG/0XbXFwAAAAAAAAAAAAAAAAAAAAAApukFMQtiHQ==
+  </data>
+ </layer>
+ <layer name="lava" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJzt1FEKglAQQNGHG6qd1EqqlVgrsVZiLSkFpWFQ4pWf58CAqF+XYUoBAAAAAAAAAAAAAAAAAAAAAAAAAGBLp6aU88pcms/38ZnfjA2Pw/TDXKd5hedD+H7Tudq8o8fQ9Jkax/Zzcztdp00dc9M+9df6N93Qar/QMTbO7+dddz/qxNZLO702drpe+2V31262na7TLuxrbp7b74Z56FxlvB336X7kuxF3ejf9d9f4L7F3bDrfb3diW13a184Os7E3wAhTFg==
+  </data>
+ </layer>
+ <layer name="stepping" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJzt0rENADAIA0GkTMj+y1BQp4QiuZO8wMsRAAAAAAAAAAAAAAAAAAAAAAAAAAAAd3l6zNKZn/j7Dp0B4G0FtjwCoQ==
+  </data>
+ </layer>
+ <layer name="lake of terror" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJzt2EFOwzAQQNEobAo3LzcpJwFOAj0FycJK4gINiWeK4D1pNiyq8jWyrXYdAAAAAADA//Hcd93LbF77W3+jv2ds/DTM+2xOmjf3VjWu56zzbp/tcj0nZ8ouaxrb73Xq+20+Wxofh3m4u/V/9bts3Ve7/DPX7jed94vYZZ0vRexyeXt4b0yiOtvpJZ1z6JxD5xw659A5XtTbWeelyF0+9n7fKJwZOXTOoXMOnXNEdXYHLkV1tsuTyLezzhNncw6dcxyGe+p+mMfG99/4me7ASy332h5/7dBwp3X+XqvWOl+397wez2bn8npbdlvjberdLu+Iet+9L9oovecdy9/0BQAAAAAAaOcDlYxoqw==
+  </data>
+ </layer>
+ <layer name="lake stones" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJzt2EEOgjAUBNCGekMv2LMIJ1EP4nelIWA0+ksk7yXdsWhmMQyUAgAAAAAAAPyr01DKGGcatr7Jvp0j30ucq5xTDbWUGudQt74JAGtsjz5sjxzH+jh3tkeOozxT6eE+9HAfehgAyDL//rOjc8y//+zoHPOc7ejfeqcfdMj3lvrhuafXnuEzS/2gQ9gL/537kHMfcu4j3nkt9kWLLde2vsuexa5oseHaKOdUsd1a7OQ2yRkAAAAAAAB44Qapii4b
+  </data>
+ </layer>
+ <layer name="door" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJzt0LENwCAQBMELITedQP9N4dxuAr2EZipYbcJJuyVvq66439OT0asr7jf/x8tnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIByHzkNArA=
+  </data>
+ </layer>
+ <layer name="details" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJzt1UEOgjAQQNFJ4AiAgnIQRe5/AC7EuGBjNCHELjTvJd102s1ftBEAAAAAAAAAAPyDpo5o6/ezLvdPuc4v822vzzV8uMv33LLxXefDlmrfuUs2vupc3JSNHzoXtb3ro87FPf/CWWcAAAAAAAAAAAAAAAAA4MesmZYDsw==
+  </data>
+ </layer>
+</map>
