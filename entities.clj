@@ -1,23 +1,45 @@
 (load-game-file "utils.clj")
 
-(defn create
-  [start-layer img]
+(def player-data
+  (atom {:health 100
+         :items #{}
+         }))
+
+(defn create-entity
+  [img]
   (assoc img
          :width 2
          :height 2
          :x-velocity 0
          :y-velocity 0
-         :start-layer start-layer
-         :health 6
-         :direction :down))
+         ))
+
+(defn create-entity-from-object-layer
+  [screen obj-name]
+  (let [obj (-> (map-layer screen "entities")
+                (map-objects)
+                (.get obj-name))
+        tile (-> (tiled-map! screen :get-tile-sets)
+                 (.getTile (-> (.getProperties obj) (.get "gid"))))
+        img (texture (.getTextureRegion tile))
+        rect (.getRectangle obj)]
+    (assoc (create-entity img)
+           :id (keyword obj-name)
+           :x (/ (.x rect) pixels-per-tile)
+           :y (/ (.y rect) pixels-per-tile)
+           :width (/ (texture! img :get-region-width) pixels-per-tile)
+           :height (/ (texture! img :get-region-height) pixels-per-tile))))
 
 (defn create-character
-  [start-layer down up stand-left walk-left]
+  [walk-layers down up stand-left walk-left]
   (let [down-flip (texture down :flip true false)
         up-flip (texture up :flip true false)
         stand-flip (texture stand-left :flip true false)
         walk-flip (texture walk-left :flip true false)]
-    (assoc (create start-layer down)
+    (assoc (create-entity down)
+           :character? true
+           :walk-layers walk-layers
+           :direction :down
            :down (animation duration [down down-flip])
            :up (animation duration [up up-flip])
            :left (animation duration [stand-left walk-left])
@@ -26,17 +48,14 @@
            :damage 4
            :attack-time 0)))
 
-(defn create-tree
-  [img]
-  (assoc (create "grass" img)
-         :tree? true))
-
 (defn create-spider
-  []
-  (let [down (texture "spider-front.png")]
-    (assoc (create-character "path" down down down down)
-           :hurt-sound (sound "enemy_hurt.wav")
-           :npc? true)))
+  [screen obj-name]
+  (let [obj-info (create-entity-from-object-layer screen obj-name)
+        down (texture "spider-front.png")]
+    (-> (create-character #{"path"} down down down down)
+        (assoc :npc? true
+               :hurt-sound (sound "enemy_hurt.wav"))
+        (merge (select-keys obj-info [:id :x :y])))))
 
 (defn create-player
   []
@@ -44,7 +63,7 @@
         up (texture "elf-back.png")
         stand-left (texture "elf-left-walk.png" :set-region 0 0 64 64)
         walk-left (texture "elf-left-walk.png" :set-region 64 0 64 64)]
-    (assoc (create-character "path" down up stand-left walk-left)
+    (assoc (create-character #{"path"} down up stand-left walk-left)
            :hurt-sound (sound "player_hurt.wav")
            :death-sound (sound "player_death.wav")
            :player? true)))
@@ -117,7 +136,9 @@
 
 (defn prevent-move
   [screen entities entity]
-  (if (or (= (:health entity) 0)
+  (if-not (:character? entity)
+    entity
+    (if (or (= (:health entity) 0)
           (< (:x entity) 0)
           (> (:x entity) (- map-width 1))
           (< (:y entity) 0)
@@ -125,7 +146,8 @@
           (and (or (not= 0 (:x-change entity))
                    (not= 0 (:y-change entity)))
                (near-entities? entities entity 1))
-          (not (on-layer-ok? screen entity (:start-layer entity))))
+          (not (some #(on-layer-ok? screen entity %)
+                     (:walk-layers entity))))
     (assoc entity
            :x-velocity 0
            :y-velocity 0
@@ -133,14 +155,16 @@
            :y-change 0
            :x (- (:x entity) (:x-change entity))
            :y (- (:y entity) (:y-change entity)))
-    entity))
+    entity)))
 
 (defn adjust-times
   [screen entity]
-  (if-let [attack-time (:attack-time entity)]
-    (assoc entity
+  (if-not (:character? entity)
+    entity
+    (if-let [attack-time (:attack-time entity)]
+      (assoc entity
            :attack-time
            (if (> attack-time 0)
              (max 0 (- attack-time (:delta-time screen)))
              max-attack-time))
-    entity))
+    entity)))

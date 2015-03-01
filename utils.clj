@@ -11,7 +11,8 @@
 (def aggro-distance 6)
 (def attack-distance 1.5)
 
-(def soft-layers #{"path"})
+(def soft-layers #{"path" "bridges"})
+;; note: other layers are hard, e.g. pits
 
 (defn touching-layer?
   [screen entity layer-name]
@@ -33,45 +34,27 @@
            (tiled-map-cell layer tile-x tile-y))
          (every? boolean))))
 
-(defn centre-1x1-on-layer?
-  [screen entity layer-name]
+(defn centre-on-layer?
+  [screen entity layer-name pad]
   (let [layer (tiled-map-layer screen layer-name)
         mid-x (+ (:x entity) (/ (:width entity) 2))
         mid-y (+ (:y entity) (/ (:height entity) 2))]
-    (->> (for [off-x [-0.5 0.5]
-               off-y [-0.5 0.5]]
+    (->> (for [off-x [(- pad) pad]
+               off-y [(- pad) pad]]
            (tiled-map-cell layer (int (+ mid-x off-x))
                                  (int (+ mid-y off-y))))
          (every? boolean))))
 
-(defn centre-on-layer?
-  [screen entity layer-name]
-  (let [layer (tiled-map-layer screen layer-name)
-        tile-x (int (+ (:x entity) (/ (:width entity) 2)))
-        tile-y (int (+ (:y entity) (/ (:height entity) 2)))]
-    (tiled-map-cell layer tile-x tile-y)))
-
 (defn on-layer-ok?
   [screen entity layer-name]
   (if (soft-layers layer-name)
-    (centre-1x1-on-layer? screen entity layer-name)
-    (all-on-layer? screen entity layer-name)))
-
-(defn on-start-layer?
-  [screen entity]
-  (->> (for [layer-name (map-layer-names screen)]
-         (or (= layer-name background-layer)
-             (= (all-on-layer? screen entity layer-name)
-                (= layer-name (:start-layer entity)))))
-       (drop-while identity)
-       (first)
-       (nil?)))
+    (centre-on-layer? screen entity layer-name 0.5)
+    (centre-on-layer? screen entity layer-name 1.0)))
 
 (defn near-entity?
   [e e2 min-distance]
   (and (not= (:id e) (:id e2))
        (nil? (:draw-time e2))
-       (> (:health e2) 0)
        (< (Math/abs ^double (- (:x e) (:x e2))) min-distance)
        (< (Math/abs ^double (- (:y e) (:y e2))) min-distance)))
 
