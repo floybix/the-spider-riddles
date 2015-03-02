@@ -19,9 +19,10 @@
   (let [obj (-> (map-layer screen "entities")
                 (map-objects)
                 (.get obj-name))
-        tile (-> (tiled-map! screen :get-tile-sets)
-                 (.getTile (-> (.getProperties obj) (.get "gid"))))
-        img (texture (.getTextureRegion tile))
+        img (-> (tiled-map! screen :get-tile-sets)
+                 (.getTile (-> (.getProperties obj) (.get "gid")))
+                 (.getTextureRegion)
+                 (texture))
         rect (.getRectangle obj)]
     (assoc (create-entity img)
            :id (keyword obj-name)
@@ -64,9 +65,10 @@
         stand-left (texture "elf-left-walk.png" :set-region 0 0 64 64)
         walk-left (texture "elf-left-walk.png" :set-region 64 0 64 64)]
     (assoc (create-character #{"path"} down up stand-left walk-left)
+           :player? true
+           :id :player
            :hurt-sound (sound "player_hurt.wav")
-           :death-sound (sound "player_death.wav")
-           :player? true)))
+           :death-sound (sound "player_death.wav"))))
 
 (defn move
   [screen entities entity]
@@ -143,7 +145,7 @@
           (> (:x entity) (- map-width 1))
           (< (:y entity) 0)
           (> (:y entity) (- map-height 1))
-          (and (or (not= 0 (:x-change entity))
+          #_(and (or (not= 0 (:x-change entity))
                    (not= 0 (:y-change entity)))
                (near-entities? entities entity 1))
           (not (some #(on-layer-ok? screen entity %)

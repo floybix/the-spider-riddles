@@ -1,6 +1,9 @@
 (load-game-file "entities.clj")
 
-(defn update-screen!
+;; one of: map, spider
+(def current-screen (atom :map))
+
+(defn camera-follow-player!
   [screen entities]
   (when-let [player (find-first :player? entities)]
     (position! screen (:x player) (:y player)))
@@ -19,7 +22,6 @@
     (let [renderer (orthogonal-tiled-map "level.tmx" (/ 1 pixels-per-tile))
           screen (update! screen :camera (orthographic) :renderer renderer)
           player (assoc (create-player)
-                        :id :player
                         :walk-layers #{"path" "bridges"}
                         :x 5 :y (- (dec map-height) 24))
           spiders [(assoc (create-spider screen "spider-1")
@@ -33,20 +35,21 @@
   
   :on-render
   (fn [screen entities]
-    (clear!)
-    (->> entities
-         (map (fn [entity]
-                (->> entity
-                     (move screen entities)
-                     (animate screen)
-                     (prevent-move screen entities)
-                     (adjust-times screen))))
-         ;(attack-player)
-         (play-sounds!)
-         ;(remove #(<= (:health %) 0))
-         (sort-by :y #(compare %2 %1))
-         (render! screen)
-         (update-screen! screen)))
+    (when (= :map @current-screen)
+      (clear!)
+      (->> entities
+        (map (fn [entity]
+               (->> entity
+                 (move screen entities)
+                 (animate screen)
+                 (prevent-move screen entities)
+                 (adjust-times screen))))
+        ;(attack-player)
+        (play-sounds!)
+        ;(remove #(<= (:health %) 0))
+        (sort-by :y >)
+        (render! screen)
+        (camera-follow-player! screen))))
   
   :on-resize
   (fn [screen entities]
@@ -72,6 +75,8 @@
           ;(attack entities player)
           )))))
 
+;;;; status screen - items, health
+
 (defscreen status-screen
   :on-show
   (fn [screen _]
@@ -93,6 +98,8 @@
   (fn [screen entities]
     (height! screen 300)))
 
+;;;; spider screen - sub-game with riddles, fighting
+
 (defscreen spider-screen
   :on-show
   (fn [screen _]
@@ -102,11 +109,12 @@
   
   :on-render
   (fn [screen entities]
-    (clear!)
-    (->> (for [entity entities]
-           (case (:id entity)
-             entity))
-         (render! screen)))
+    (when (= :spider @current-screen)
+      (clear!)
+      (->> (for [entity entities]
+             (case (:id entity)
+               entity))
+        (render! screen))))
   
   :on-resize
   (fn [screen entities]
@@ -118,4 +126,4 @@
     )
   )
 
-(set-game-screen! main-screen status-screen)
+(set-game-screen! main-screen spider-screen status-screen)
