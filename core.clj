@@ -89,10 +89,10 @@
           ;(attack entities player)
           )))))
 
+
 ;;;; status screen - items, health
 
 (def button->item-id (atom {}))
-(def item-id->table-cell (atom {}))
 
 (defscreen status-screen
   :on-show
@@ -113,12 +113,12 @@
     (let [e (-> (:which-entity screen)
               (update-in [:width] * pixels-per-tile)
               (update-in [:height] * pixels-per-tile))
-          button (text-button "Use" (style :text-button nil nil nil (bitmap-font)))
+          ui-skin (skin "uiskin.json")
+          button (text-button "Use" ui-skin)
           item-table (find-first :item-table? entities)
           held-e (horizontal [(image e) button])
           ]
       (swap! button->item-id assoc (:object button) (:id e))
-      (swap! item-id->table-cell assoc (:id e) (:object held-e))
       (add! item-table held-e)
       entities))
   
@@ -140,6 +140,7 @@
   :on-resize
   (fn [screen entities]
     (height! screen 600)))
+
 
 ;;;; spider screen - sub-game for riddles, fighting
 
@@ -165,7 +166,6 @@
   
   :on-touch-down
   (fn [screen entities]
-    (println (game :x) (game :y))
     )
   )
 
