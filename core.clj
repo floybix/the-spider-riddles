@@ -1,6 +1,8 @@
 (load-game-file "entities.clj")
 
-;; one of: map, spider
+(declare main-screen status-screen)
+
+;; one of :map, :spider
 (def current-screen (atom :map))
 
 (defn camera-follow-player!
@@ -16,6 +18,20 @@
       (sound! play-sound :play)))
   (map #(dissoc % :play-sound) entities))
 
+(defn pick-up-items
+  [entities]
+  (when-let [player (find-first :player? entities)]
+    (->>
+      (for [item entities]
+        (if (and (near-entity? player item 1)
+                 (not (:character item)))
+          ;; pick it up
+          (do (screen! status-screen :on-pick-up-item :which-entity item)
+            nil)
+          ;; otherwise - ignore it
+          item))
+      (remove nil?))))
+
 (defscreen main-screen
   :on-show
   (fn [screen _]
@@ -28,9 +44,9 @@
                           :walk-layers #{"pits"})
                    (create-spider screen "spider-2")]
           rope (create-entity-from-object-layer screen "rope")
-          ;sword
+          sword (create-entity-from-object-layer screen "sword")
           ]
-      (concat [player rope]
+      (concat [player rope sword]
               spiders)))
   
   :on-render
@@ -42,11 +58,9 @@
                (->> entity
                  (move screen entities)
                  (animate screen)
-                 (prevent-move screen entities)
-                 (adjust-times screen))))
-        ;(attack-player)
+                 (prevent-move screen entities))))
+        (pick-up-items)
         (play-sounds!)
-        ;(remove #(<= (:health %) 0))
         (sort-by :y >)
         (render! screen)
         (camera-follow-player! screen))))
@@ -77,13 +91,42 @@
 
 ;;;; status screen - items, health
 
+(def button->item-id (atom {}))
+(def item-id->table-cell (atom {}))
+
 (defscreen status-screen
   :on-show
   (fn [screen _]
     (update! screen :camera (orthographic) :renderer (stage))
-    [(assoc (label "0" (color :white))
+    (height! screen 600)
+    [(assoc (vertical [] :left :reverse)
+            :item-table? true
+            :id :item-table)
+     (assoc (label "0" (color :white))
            :id :health
-           :x 5)]
+           :x 5 :y (- (height screen) 50))]
+    )
+  
+  ;; when calling this, give :which-entity with the entity
+  :on-pick-up-item
+  (fn [screen entities]
+    (let [e (-> (:which-entity screen)
+              (update-in [:width] * pixels-per-tile)
+              (update-in [:height] * pixels-per-tile))
+          button (text-button "Use" (style :text-button nil nil nil (bitmap-font)))
+          item-table (find-first :item-table? entities)
+          held-e (horizontal [(image e) button])
+          ]
+      (swap! button->item-id assoc (:object button) (:id e))
+      (swap! item-id->table-cell assoc (:id e) (:object held-e))
+      (add! item-table held-e)
+      entities))
+  
+  :on-ui-changed
+  (fn [screen entities]
+    (let [item-id (get @button->item-id (:actor screen))]
+      (println item-id)
+      )
     )
   
   :on-render
@@ -96,9 +139,9 @@
   
   :on-resize
   (fn [screen entities]
-    (height! screen 300)))
+    (height! screen 600)))
 
-;;;; spider screen - sub-game with riddles, fighting
+;;;; spider screen - sub-game for riddles, fighting
 
 (defscreen spider-screen
   :on-show
@@ -118,7 +161,7 @@
   
   :on-resize
   (fn [screen entities]
-    (height! screen 300))
+    (height! screen 600))
   
   :on-touch-down
   (fn [screen entities]

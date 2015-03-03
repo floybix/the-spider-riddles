@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="90" height="70" tilewidth="32" tileheight="32" nextobjectid="6">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="90" height="70" tilewidth="32" tileheight="32" nextobjectid="8">
  <tileset firstgid="1" name="terrain_atlas" tilewidth="32" tileheight="32">
   <image source="terrain_atlas.png" width="1024" height="1024"/>
   <terraintypes>
@@ -117,6 +117,9 @@
    <image width="64" height="64" source="spider-front.png"/>
   </tile>
  </tileset>
+ <tileset firstgid="2055" name="candy-house" tilewidth="113" tileheight="150">
+  <image source="candy-house.png" width="113" height="150"/>
+ </tileset>
  <layer name="grass" width="90" height="70">
   <data encoding="base64" compression="zlib">
    eJztwwEJAAAMA6Dx/imXZDkOCvaSqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq+uYAl0rsLA==
@@ -124,7 +127,7 @@
  </layer>
  <layer name="path" width="90" height="70">
   <data encoding="base64" compression="zlib">
-   eJztnFFywiAQQPky39qTaC9S7UVaexG1J1FPop5EvUA302HcIZAQkiwL7JvZr2oDL4HshqBSQk58QKxHig1x24eg20zFF8T3SLElbPdQdJup0J7nEPuBcSBsdwh67K7Uq89UaM8pXYuh4LFbO6a8LkrxXF/L+DqmHnuleMbXcoy+luY5xrWMj1+K51j9jH18KmL3M/bxKcD3QPE8HZT3QFd9Hfs8Tw11PtdVX+fqmTrP6KqvudfMofjMi8eZUieI84zmeDni0+8L+L1C3MRzMD79voPfB8RTPAfj0+95pdQC4q2iOd5QdE7D6Xn/TnXff5bgdwXxjjyHrn/o3GYZ+H1bmD5THTNr8LuB+ESex1z/GBqmz1Q9f4PfLcSPxbMrP6OIhcrL8x78HiB+LZ5j9sXVBg5tC+EIfk8Q56q5tiWex+MCfq8Qt6o5L4vn8biD3wfEs3rlJ3puxHmDC1tuYuKbS2By82zDlm8M+Sw+d77jpSTPON9wsVPNXMH3c215fUmeZX6eFp86cmzMed5VW3LIhVKmbw0qnsPoW4PmumYwNTnNu5wRzzSIZxrEMw3imQbxTIP2rOsSTut/OWHWKeJ7GsxnslL3TUvtG7sWz9MRe59HKcTe51EKkuPRIJ5pEM804Jql5Py57T3HTcdnfLxJvvFP2xqTruNWHX83nePzgr9bsmfbOwK29zN0bub6G3ZuOy9c8jp8DcSex2zu9Tpen/OC1whjOzbfN0xxfLW559AXc08g5/XfvvsCOLybYfs9GI5uMaH7AmJ4ts0RKTiuCd0XMFXf2saXeR9OxXENt7qua3xxn4ddxHhPz4W+r7WNLQ7tTB1uYytXxDMN4pkG8UyDeLYzxm/s4mc+4rkJfrYwJJaKV03PBVft26eWrKPtWaB47r/3rc//kVpEEISU+ANgnXQF
+   eJztnOFtwyAQRlmh3SSZpM0kbSdJO3FjVaeeCGAD5uOA70n8ihPDM+A7Y+IcmYm3R3k/qdzAda9B6ozi41E+TypfwHrXInVGIZ5fHuW7svwA612CjN2r+28zCvE8Ul8sRY/dzTGyX6zieevLuh+jx94qnnVf7tHW1Tz36Mv6/Kt47tXO3udH0budvc+PQN8D6bkdyHtgLL/ufZ1bg47n9vLrWT2j44y9/Np6zlwKel5cYR4OQc8Y6BnDjJ4lprH0vP/uyu4/pesfEttcCr8fKr7PmcbMmesftcX3OaPnWHyGKK9uHc892xKrg4W61eKvbdFzG/x5mZ7bIPGJzI06bogRik18jsYSmpk9C6F4o+ZYfe2OjpeVPOt4I8bdPccKR49LxfUreeb83JbSPLIGf56P5ZYWYqGRyc1B6bmM3Bx01jWD1sw071qGnjHQMwZ6xkDPGOgZg3iWvMTS+t9M+HkKfbfBfybLvK8tm2/tmp7b0Xufxyr03uexCozxMNAzBnrGoHOWlePn1HuOt51jjnhjvPFHao1J8rjrzue+c31d9HdX9hx6RyD0fobEZrHPtPPQdbES1+k+0HseC7mXdbyc66LXCHs79t83HHF8pdxbaIu/J9Dy+m/uvgAL72aE/g/GoltN6b6AHp5Dc8QIjjdK9wW0altqfPn34VEcb1jL6/bGl/V5OEaP9/RiyH0tNbYs1HN0rI2tWaFnDPSMgZ4x0HOYM/5jVz/zoedn9LOFmnJxtnJ6K8Ry35xcciupZ4H0nL/3Led3mIsQQkbiF0M4X5U=
   </data>
  </layer>
  <layer name="pits" width="90" height="70">
@@ -169,13 +172,14 @@
  </layer>
  <layer name="details" width="90" height="70">
   <data encoding="base64" compression="zlib">
-   eJzt1bENwjAQQNGTd2Y1Egghg0DCKjkKNwgkFMUF6D3Jjc9ufmFHAAAAAAAAAADwD44loivvZ33un3KdX+Z1b8h1+XCX/dyy8V3nzQ5fthvz3FXn5uZsvOjcVH3XJ52be/6FD50BAAAAAAAAAAAAAAAAgB+zAq21D9Q=
+   eJzt1T0OgjAYgOGmC16Yq4mCykEQvIofQxejiUtjhOdJuvQnTd6hTQkAAAAAAAAAgC045pS6/H7tFPPnGP3LepkbYlw+nN2S5vDb+6dofN9B51raL9tdY99N5+rmaLzoXFV510edq1v/wofOAAAAAAAAAAAAAAAAAMCfeQJi5Q/j
   </data>
  </layer>
  <objectgroup name="entities">
-  <object id="1" name="rope" type="rope" gid="2049" x="780" y="831"/>
-  <object id="3" name="lava-step" type="stepping-stone" gid="2053" x="1409" y="390"/>
+  <object id="1" name="rope" type="item" gid="2049" x="780" y="831"/>
+  <object id="3" name="lava-step" type="item" gid="2053" x="1409" y="390"/>
   <object id="4" name="spider-1" type="spider" gid="2054" x="388.101" y="909.01"/>
   <object id="5" name="spider-2" type="spider" gid="2054" x="845.811" y="291.262"/>
+  <object id="7" name="sword" type="item" gid="2050" x="204.857" y="820.189"/>
  </objectgroup>
 </map>
