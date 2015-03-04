@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="90" height="70" tilewidth="32" tileheight="32" nextobjectid="8">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="90" height="70" tilewidth="32" tileheight="32" nextobjectid="11">
  <tileset firstgid="1" name="terrain_atlas" tilewidth="32" tileheight="32">
   <image source="terrain_atlas.png" width="1024" height="1024"/>
   <terraintypes>
@@ -135,11 +135,6 @@
    eJzt1gEKgjAUBmDPkTepk1QnqU6iXbaNfDjGLKkIiu+DhxOeIP/G064DAAAAAAAAgP+1T3VIdazWfNYp1TnVpVq3xD60yt48FtluU+2KdSu73LtJNabqp95z8Yysl0XOZeUsc471uc69sQe7onec6vqdV/5JrZxjhrRyrvfCOV6nlXPMkDrnoZtnRjlnluY5s9bMjfulORDP9NPVvHgu5kP+l8jnc01uw9QzrOjlLr5tazPmNTFz/S8AAAAAAAAAAAAAAAAA8I4bu9Et1Q==
   </data>
  </layer>
- <layer name="bridges" width="90" height="70">
-  <data encoding="base64" compression="zlib">
-   eJzt0DEOgCAQRNHNnlk5CRqPK42NQrDnvWS6X00EAAAAAAAAAADw2DJiH6zkv/bd8VXbR8dgZ/bba9IBAAAAAAAAAAAAAAAAAACs5AZ3lw/W
-  </data>
- </layer>
  <layer name="Shark pool" width="90" height="70">
   <data encoding="base64" compression="zlib">
    eJzt1UEKgkAYhmE9T52jTR2jWlTHqBbWMaqFdchGUBgGoYWTkTwPfAtbxcuPFgUA8C92ZVHsox3KX/+j6Wkar8Iu0a46Z9PdcNpY53z6bjje0vsjiyrpug7bhG3ddVZV0ngRdgo765xV3PnYNtY5v7jzLeze7hH9Pgt76TxI+n7um1seTudx1KHhXOdRfLppnfNobvoZrbvvWfvsG/gdtb4AAAAAAAAAAAAAAAAAAAAAADBpb8mLQUk=
@@ -170,6 +165,11 @@
    eJzt0EENACAMALH98P8BJ+AE7DATZAlpFVwugpd6ixituuJ/Mx8vn5/b+fj4DAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQ7gKXXgRy
   </data>
  </layer>
+ <layer name="bridges" width="90" height="70">
+  <data encoding="base64" compression="zlib">
+   eJzt0DEOgCAQRNHNnlk5CRqPK42NQrDnvWS6X00EAAAAAAAAAADw2DJiH6zkv/bd8VXbR8dgZ/bba9IBAAAAAAAAAAAAAAAAAACs5AZ3lw/W
+  </data>
+ </layer>
  <layer name="details" width="90" height="70">
   <data encoding="base64" compression="zlib">
    eJzt1T0OgjAYgOGmC16Yq4mCykEQvIofQxejiUtjhOdJuvQnTd6hTQkAAAAAAAAAgC045pS6/H7tFPPnGP3LepkbYlw+nN2S5vDb+6dofN9B51raL9tdY99N5+rmaLzoXFV510edq1v/wofOAAAAAAAAAAAAAAAAAMCfeQJi5Q/j
@@ -181,5 +181,8 @@
   <object id="4" name="spider-1" type="spider" gid="2054" x="388.101" y="909.01"/>
   <object id="5" name="spider-2" type="spider" gid="2054" x="845.811" y="291.262"/>
   <object id="7" name="sword" type="item" gid="2050" x="204.857" y="820.189"/>
+  <object id="8" name="volcano-1" type="volcano" x="880.211" y="1966.07" width="32" height="32"/>
+  <object id="9" name="volcano-2" type="volcano" x="1008.24" y="2014.88" width="32" height="32"/>
+  <object id="10" name="lava-step-place" type="place" x="929.823" y="1983.68" width="60" height="60"/>
  </objectgroup>
 </map>

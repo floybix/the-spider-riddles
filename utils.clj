@@ -127,3 +127,39 @@
     (not= (:y-velocity entity) 0) (if (> (:y-velocity entity) 0) :up :down)
     (not= (:x-velocity entity) 0) (if (> (:x-velocity entity) 0) :right :left)
     :else nil))
+
+(defn xy-centered
+  [entity]
+  (let [{:keys [x y width height]} entity]
+    (assoc entity
+           :x (+ x (/ width 2))
+           :y (+ y (/ height 2)))))
+
+(defn play-sounds!
+  [entities]
+  (doseq [{:keys [play-sound]} entities]
+    (when play-sound
+      (sound! play-sound :play)))
+  (map #(dissoc % :play-sound) entities))
+
+(defn render-map-fixed!
+  [{:keys [^com.badlogic.gdx.maps.tiled.renderers.BatchTiledMapRenderer renderer ^Camera camera] :as screen}
+   & [k & layer-names]]
+  (when camera (.setView renderer camera))
+  (if k
+    (let [all-layer-names (map-layer-names screen)]
+      ; make sure the layer names exist
+      (doseq [n layer-names]
+        (when-not (contains? (set all-layer-names) n)
+          (throw (Exception. (format "Layer \"%s\" does not exist." n)))))
+      ; render with or without the supplied layers
+      (->> (case k
+             :with (set layer-names)
+             :without (clojure.set/difference (set all-layer-names)
+                                              (set layer-names))
+             #_(u/throw-key-not-found k))
+           (map #(.indexOf ^java.util.List all-layer-names %))
+           (sort)
+           int-array
+           (.render renderer))))
+  nil)

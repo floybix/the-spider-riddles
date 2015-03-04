@@ -5,18 +5,13 @@
 ;; one of :map, :spider
 (def current-screen (atom :map))
 
+;; main screen - the map
+
 (defn camera-follow-player!
   [screen entities]
   (when-let [player (find-first :player? entities)]
     (position! screen (:x player) (:y player)))
   entities)
-
-(defn play-sounds!
-  [entities]
-  (doseq [{:keys [play-sound]} entities]
-    (when play-sound
-      (sound! play-sound :play)))
-  (map #(dissoc % :play-sound) entities))
 
 (defn pick-up-items
   [entities]
@@ -27,6 +22,7 @@
                  (not (:character item)))
           ;; pick it up
           (do (screen! status-screen :on-pick-up-item :which-entity item)
+            ;; nil to remove from screen
             nil)
           ;; otherwise - ignore it
           item))
@@ -41,18 +37,27 @@
                         :walk-layers #{"path" "bridges"}
                         :x 5 :y (- (dec map-height) 24))
           spiders [(assoc (create-spider screen "spider-1")
-                          :walk-layers #{"pits"})
+                          :walk-layers #{"pits"}
+                          :in-pits? true)
                    (create-spider screen "spider-2")]
-          rope (create-entity-from-object-layer screen "rope")
+          rope (assoc (create-entity-from-object-layer screen "rope")
+                      :in-pits? true)
           sword (create-entity-from-object-layer screen "sword")
+          volc-1 (merge (particle-effect "fire.p" :scale-effect 0.02)
+                        (rectangle-from-object-layer screen "volcano-1"))
           ]
-      (concat [player rope sword]
+      (concat [player rope sword volc-1]
               spiders)))
   
   :on-render
   (fn [screen entities]
     (when (= :map @current-screen)
       (clear!)
+      (doseq [e entities]
+        (when (particle-effect? e)
+          (particle-effect! e :start)
+          (particle-effect! e :update (graphics! :get-delta-time))))
+      ;;
       (->> entities
         (map (fn [entity]
                (->> entity

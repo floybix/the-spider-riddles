@@ -14,6 +14,18 @@
          :y-velocity 0
          ))
 
+(defn rectangle-from-object-layer
+  [screen obj-name]
+  (let [obj (-> (map-layer screen "entities")
+                (map-objects)
+                (.get obj-name))
+        rect (.getRectangle obj)]
+    {:id (keyword obj-name)
+     :x (/ (.x rect) pixels-per-tile)
+     :y (/ (.y rect) pixels-per-tile)
+     :width  (/ (.width rect) pixels-per-tile)
+     :height  (/ (.height rect) pixels-per-tile)}))
+
 (defn create-entity-from-object-layer
   [screen obj-name]
   (let [obj (-> (map-layer screen "entities")
