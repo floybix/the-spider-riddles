@@ -174,20 +174,20 @@
 (defscreen status-screen
   :on-show
   (fn [screen _]
-    (update! screen :camera (orthographic) :renderer (stage))
-    (height! screen 600)
-    [(assoc (vertical [] :left :reverse)
-            :id :item-table
-            :y 0)
-     (assoc (label "" (color :yellow))
-           :id :health
-           :x (- (width screen) 100) :y 10)
-     (assoc (label start-story (color :white))
-            :id :narration
-            :x (width screen)
-            :y (- (height screen) 100)
-            :height 50)]
-    )
+    (let [screen (update! screen :camera (orthographic) :renderer (stage))]
+      (height! screen 600)
+      [(assoc (vertical [] :left :reverse)
+              :id :item-table
+              :y 0)
+       (assoc (label "" (color :yellow))
+              :id :health
+              :x (- (width screen) 100) :y 10)
+       (assoc (label start-story (color :white))
+              :id :narration
+              :x (width screen)
+              :y (- (height screen) 100)
+              :height 50)]
+    ))
   
   ;; when calling this, give :which-entity with the entity
   :on-pick-up-item
@@ -288,12 +288,12 @@
 (defscreen spider-screen
   :on-show
   (fn [screen _]
-    (update! screen :camera (orthographic) :renderer (stage))
-    (height! screen 600)
-    (let [player (assoc (create-player)
+    (let [screen (update! screen :camera (orthographic) :renderer (stage))
+          player (assoc (create-player)
                         :width 200 :height 200
                         :x (- (width screen) 200)
                         :y 100)]
+      (height! screen 600)
       [player]))
   
   :on-render
