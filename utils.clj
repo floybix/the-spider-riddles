@@ -134,6 +134,10 @@
     (assoc entity
            :x (+ x (/ width 2)))))
 
+(defn find-by-id
+  [id entities]
+  (find-first #(= id (:id %)) entities))
+
 (defn play-sounds!
   [entities]
   (doseq [{:keys [play-sound]} entities]

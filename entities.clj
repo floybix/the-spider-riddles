@@ -66,7 +66,8 @@
   (let [obj-info (create-entity-from-object-layer screen obj-name)
         down (texture "spider-front.png")]
     (-> (create-character #{"path"} down down down down)
-        (assoc :npc? true
+        (assoc :spider? true
+               :npc? true
                :hurt-sound (sound "enemy_hurt.wav"))
         (merge (select-keys obj-info [:id :x :y])))))
 
