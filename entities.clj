@@ -2,7 +2,7 @@
 
 (def player-data
   (atom {:health 100
-         :items #{}
+         :riddles-done #{}
          }))
 
 (defn create-entity
@@ -48,7 +48,8 @@
   (let [down-flip (texture down :flip true false)
         up-flip (texture up :flip true false)
         stand-flip (texture stand-left :flip true false)
-        walk-flip (texture walk-left :flip true false)]
+        walk-flip (texture walk-left :flip true false)
+        ]
     (assoc (create-entity down)
            :character? true
            :walk-layers walk-layers
@@ -100,13 +101,32 @@
 
 (defn animate
   [screen entity]
-  (if-let [direction (get-direction entity)]
-    (if-let [anim (get entity direction)]
-      (merge entity
-             (animation->texture screen anim)
-             {:direction direction})
-      entity)
-    entity))
+  (if (:jumping? entity)
+    (if-let [add (first (:jump-seq entity))]
+      (-> entity
+        (update-in [:width] + add)
+        (update-in [:height] + add)
+        (update-in [:x] - (/ add 2))
+        (update-in [:y] - (/ add 2))
+        (update-in [:jump-seq] next))
+      ;; end of jump
+      (assoc entity :jumping? nil :jump-seq nil)
+      )
+    (if-let [direction (get-direction entity)]
+      (if-let [anim (get entity direction)]
+        (merge entity
+               (animation->texture screen anim)
+               {:direction direction})
+        entity)
+      entity)))
+
+(defn start-jump
+  [player]
+  (if (:jumping? player)
+    player
+    (assoc player
+         :jumping? true
+         :jump-seq jump-add-seq)))
 
 (defn not-victim?
   [attacker victim]
@@ -158,11 +178,11 @@
           (> (:x entity) (- map-width 1))
           (< (:y entity) 0)
           (> (:y entity) (- map-height 1))
-          #_(and (or (not= 0 (:x-change entity))
-                   (not= 0 (:y-change entity)))
-               (near-entities? entities entity 1))
-          (not (some #(on-layer-ok? screen entity %)
-                     (:walk-layers entity))))
+          (let [layers (if (:jumping? entity)
+                         jump-layers
+                         (:walk-layers entity))]
+            (not (some #(on-layer-ok? screen entity %)
+                       layers))))
     (assoc entity
            :x-velocity 0
            :y-velocity 0

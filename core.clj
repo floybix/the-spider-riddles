@@ -35,9 +35,12 @@
               nil)
             ;; meet spiders
             (:spider? e)
-            (do (screen! spider-screen :on-enter :which-entity e)
-              (reset! current-screen-k :spider)
-              e)
+            (if (get (:riddles-done @player-data) (:id e))
+              ;; already done this spider's riddle
+              e
+              (do (screen! spider-screen :on-enter :which-entity e)
+                (reset! current-screen-k :spider)
+                e))
             :else
             e)
           e))
@@ -75,8 +78,16 @@
           volc-1 (merge (particle-effect "fire.p" :scale-effect 0.02)
                         (rectangle-from-object-layer screen "volcano-1"))
           ]
+      (add-timer! screen :eruption 5 5)
       (concat [player rope sword volc-1]
               spiders)))
+  
+  :on-timer
+  (fn [screen entities]
+    (case (:id screen)
+      :eruption (doseq [e entities]
+                  (when (particle-effect? e)
+                    (particle-effect! e :start)))))
   
   :on-render
   (fn [screen entities]
@@ -84,7 +95,6 @@
       (clear!)
       (doseq [e entities]
         (when (particle-effect? e)
-          (particle-effect! e :start)
           (particle-effect! e :update (graphics! :get-delta-time))))
       ;;
       (->> entities
@@ -105,30 +115,27 @@
   
   :on-use-item
   (fn [screen entities]
-    (for [e entities
-          :let [player (when (:player? e) e)]]
-      (if-not player
-        e
-        (case (:item-id screen)
-          :sword (if (on-layer-ok? screen player "bridges")
-                   (assoc player
-                          :walk-layers #{"pits"}
-                          :in-pits? true)
-                 player)
-          :rope (if (on-layer-ok? screen player "bridges")
-                   (assoc player
-                          :walk-layers #{"path" "bridges"}
-                          :in-pits? nil)
-                 player)))))
+    (when-let [player (find-by-id :player entities)]
+      (case (:item-id screen)
+        :sword (if (on-layer-ok? screen player "bridges")
+                 (->> (assoc player
+                             :walk-layers #{"pits"}
+                             :in-pits? true)
+                   (conj (remove :player? entities))))
+        :rope (if (on-layer-ok? screen player "bridges")
+                (->> (assoc player
+                            :walk-layers #{"path" "bridges"}
+                            :in-pits? nil)
+                  (conj (remove :player? entities))))
+        )))
   
   :on-key-down
   (fn [screen entities]
     (when (= :main @current-screen-k)
       (when-let [player (find-by-id :player entities)]
         (when (= (:key screen) (key-code :space))
-          (print " ")
-          ;(attack entities player)
-          ))))
+          (->> (start-jump player)
+            (conj (remove :player? entities)))))))
   
   :on-touch-down
   (fn [screen entities]
@@ -207,16 +214,9 @@
 
 ;;;; spider screen - sub-game for riddles, fighting
 
-(defscreen spider-screen
-  :on-show
-  (fn [screen _]
-    (update! screen :camera (orthographic) :renderer (stage))
-    (height! screen 600)
-    (let [player (assoc (create-player)
-                        :width 200 :height 200
-                        :x (- (width screen) 200)
-                        :y 100)
-          spider-bubble (assoc (shape :filled
+(defn make-speech-bubbles
+  [screen]
+  (let [spider-bubble (assoc (shape :filled
                                     :set-color (color :white)
                                     :ellipse 0 0 400 100
                                     :triangle 0 0 0 50 50 50)
@@ -237,7 +237,18 @@
                           :x (- (width screen) 220)
                           :y 330
                           :width 200)]
-      [player spider-bubble spider-speech response]))
+    [spider-bubble spider-speech response]))
+  
+(defscreen spider-screen
+  :on-show
+  (fn [screen _]
+    (update! screen :camera (orthographic) :renderer (stage))
+    (height! screen 600)
+    (let [player (assoc (create-player)
+                        :width 200 :height 200
+                        :x (- (width screen) 200)
+                        :y 100)]
+      [player]))
   
   :on-render
   (fn [screen entities]
@@ -252,13 +263,14 @@
   (fn [screen entities]
     (let [spider (-> (:which-entity screen)
                    (assoc :width 200 :height 200
-                          :x 50 :y 100))]
-      (->> (for [e entities]
+                          :x 50 :y 100))
+          more-ents (make-speech-bubbles screen)]
+      (->> (for [e more-ents]
              (case (:id e)
                :spider-speech (doto e (label! :set-text (:riddle spider)))
                :response-field (doto e (text-field! :set-text ""))
                e))
-        (concat [spider]))))
+        (concat entities [spider]))))
   
   :on-key-down
   (fn [screen entities]
@@ -272,6 +284,7 @@
             (if (= wrote (:answer spider))
               ;; right
               (do (println "right!")
+                (swap! player-data update-in [:riddles-done] conj (:id spider))
                 (reset! current-screen-k :main))
               ;; wrong
               (println "wrong!"))

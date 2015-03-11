@@ -14,6 +14,10 @@
 (def soft-layers #{"path" "bridges"})
 ;; note: other layers are hard, e.g. pits
 
+(def jump-layers #{"path" "bridges" "lava" "lake of terror"})
+
+(def jump-add-seq (concat (repeat 30 0.05) (repeat 30 -0.05)))
+
 (defn touching-layer?
   [screen entity layer-name]
   (let [layer (tiled-map-layer screen layer-name)]
