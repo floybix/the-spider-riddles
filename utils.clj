@@ -128,12 +128,11 @@
     (not= (:x-velocity entity) 0) (if (> (:x-velocity entity) 0) :right :left)
     :else nil))
 
-(defn xy-centered
+(defn x-centered
   [entity]
-  (let [{:keys [x y width height]} entity]
+  (let [{:keys [x width]} entity]
     (assoc entity
-           :x (+ x (/ width 2))
-           :y (+ y (/ height 2)))))
+           :x (+ x (/ width 2)))))
 
 (defn play-sounds!
   [entities]

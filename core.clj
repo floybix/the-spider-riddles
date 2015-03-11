@@ -19,7 +19,9 @@
     (->>
       (for [item entities]
         (if (and (near-entity? player item 1)
-                 (not (:character item)))
+                 (not (:character? item))
+                 (= (:in-pits? item)
+                    (:in-pits? player)))
           ;; pick it up
           (do (screen! status-screen :on-pick-up-item :which-entity item)
             ;; nil to remove from screen
@@ -27,6 +29,15 @@
           ;; otherwise - ignore it
           item))
       (remove nil?))))
+
+(defn render-with-overlaps
+  [screen entities]
+  (render-map-fixed! screen :without "bridges")
+  (draw! screen (filter :in-pits? entities))
+  (render-map-fixed! screen :with "bridges")
+  (draw! screen (->> (remove :in-pits? entities)
+                  (map (fn [e] (if (particle-effect? e) (x-centered e) e)))))
+  entities)
 
 (defscreen main-screen
   :on-show
@@ -67,12 +78,29 @@
         (pick-up-items)
         (play-sounds!)
         (sort-by :y >)
-        (render! screen)
+        (render-with-overlaps screen)
         (camera-follow-player! screen))))
   
   :on-resize
   (fn [screen entities]
     (height! screen vertical-tiles))
+  
+  :on-use-item
+  (fn [screen entities]
+    (for [player entities]
+      (if-not (:player? player)
+        player
+        (case (:item-id screen)
+          :sword (if (on-layer-ok? screen player "bridges")
+                   (assoc player
+                          :walk-layers #{"pits"}
+                          :in-pits? true)
+                 player)
+          :rope (if (on-layer-ok? screen player "bridges")
+                   (assoc player
+                          :walk-layers #{"path" "bridges"}
+                          :in-pits? nil)
+                 player)))))
   
   :on-key-down
   (fn [screen entities]
@@ -130,9 +158,10 @@
   :on-ui-changed
   (fn [screen entities]
     (let [item-id (get @button->item-id (:actor screen))]
-      (println item-id)
-      )
-    )
+      (screen! main-screen :on-use-item :item-id item-id)
+      ;(println item-id)
+      entities
+    ))
   
   :on-render
   (fn [screen entities]
