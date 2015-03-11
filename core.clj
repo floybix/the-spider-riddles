@@ -9,7 +9,7 @@
   [text]
   (screen! status-screen :on-narration :say text))
 
-(def start-story "You run out of the candy house and find yourself on a path through a grassy plain.")
+(def start-story "You come out of the candy house into the bright daylight. Right! Come on, be brave!")
 
 ;; main screen - the map
 
@@ -67,9 +67,14 @@
           spiders [(assoc (create-spider screen "spider-1")
                           :walk-layers #{"pits"}
                           :in-pits? true
-                          :riddle (str "What is one plus one on a snowy winter Monday in Argentina?")
-                          :answer "two")
-                   (create-spider screen "spider-2")]
+                          :riddle (str "First tell me where you battle and fight, "
+                                       "then what is in the middle of battle, "
+                                       "and what sounds like the search for a hard to find word. "
+                                       "Put them together to make something hard to pick up.")
+                          :answer "water")
+                   (assoc (create-spider screen "spider-2")
+                          :riddle (str "Put riddle here.")
+                          :answer "foo")]
           rope (assoc (create-entity-from-object-layer screen "rope")
                       :item? true
                       :in-pits? true)
@@ -117,16 +122,24 @@
   (fn [screen entities]
     (when-let [player (find-by-id :player entities)]
       (case (:item-id screen)
-        :sword (if (on-layer-ok? screen player "bridges")
-                 (->> (assoc player
-                             :walk-layers #{"pits"}
-                             :in-pits? true)
-                   (conj (remove :player? entities))))
-        :rope (if (on-layer-ok? screen player "bridges")
-                (->> (assoc player
-                            :walk-layers #{"path" "bridges"}
-                            :in-pits? nil)
-                  (conj (remove :player? entities))))
+        :sword (if (and (not (:in-pits? player))
+                        (on-layer-ok? screen player "bridges"))
+                 (do (narrate "You slash the rope bridge and tumble into the pit below.")
+                   (->> (assoc player
+                               :walk-layers #{"pits"}
+                               :in-pits? true)
+                     (conj (remove :player? entities))))
+                   (do (narrate "You slash something unnecessarily and look around foolishly.")
+                     nil))
+        :rope (if (and (:in-pits? player)
+                       (on-layer-ok? screen player "bridges"))
+                (do (narrate "Ah, this rope is so useful!")
+                  (->> (assoc player
+                              :walk-layers #{"path" "bridges"}
+                              :in-pits? nil)
+                    (conj (remove :player? entities))))
+                (do (narrate "Oops, not there!")
+                  nil))
         )))
   
   :on-key-down
@@ -135,7 +148,8 @@
       (when-let [player (find-by-id :player entities)]
         (when (= (:key screen) (key-code :space))
           (->> (start-jump player)
-            (conj (remove :player? entities)))))))
+            (conj (remove :player? entities)))
+          ))))
   
   :on-touch-down
   (fn [screen entities]
@@ -147,8 +161,10 @@
               max-y (* (game :height) (/ 2 3))]
           (when (and (< min-x (game :x) max-x)
                      (< min-y (game :y) max-y))
-            ;(attack entities player)
-            ))))))
+            (->> (start-jump player)
+              (conj (remove :player? entities)))
+            )))))
+  )
 
 
 ;;;; status screen - items, health
@@ -161,13 +177,16 @@
     (update! screen :camera (orthographic) :renderer (stage))
     (height! screen 600)
     [(assoc (vertical [] :left :reverse)
-            :id :item-table)
+            :id :item-table
+            :y 0)
      (assoc (label "" (color :yellow))
            :id :health
-           :x 10 :y (- (height screen) 80))
+           :x (- (width screen) 100) :y 10)
      (assoc (label start-story (color :white))
             :id :narration
-            :x 10 :y (- (height screen) 50))]
+            :x (width screen)
+            :y (- (height screen) 100)
+            :height 50)]
     )
   
   ;; when calling this, give :which-entity with the entity
@@ -181,6 +200,11 @@
           item-table (find-by-id :item-table entities)
           held-e (horizontal [(image e) button])
           ]
+      (case (:id e)
+        :sword (narrate "Your holely sword has been brought to you!")
+        :rope (narrate "You find a small rope in a pit.")
+        :floaty (narrate "What a surprise! A floaty.")
+        :wand (narrate "A wand! Do some magic!"))
       (swap! button->item-id assoc (:object button) (:id e))
       (add! item-table held-e)
       entities))
@@ -191,20 +215,42 @@
       (screen! main-screen :on-use-item :item-id item-id)
       entities))
   
+  :on-key-down
+  (fn [screen entities]
+    (let [item-ids (vals @button->item-id)]
+      (cond
+        (= (:key screen) (key-code :num-1))
+        (do (screen! main-screen :on-use-item :item-id
+                     (nth item-ids 0))
+          entities)
+        )))
+  
   :on-narration
   (fn [screen entities]
-    (for [entity entities]
-      (if (= :narration (:id entity))
-        (doto entity (label! :set-text (:say screen)))
-        entity)))
+    (for [e entities]
+      (if (= :narration (:id e))
+        (do
+          (label! e :set-text (:say screen))
+          (assoc e :x (width screen) :counter 0))
+        e)))
   
   :on-render
   (fn [screen entities]
-    (->> (for [entity entities]
-           (case (:id entity)
-             :health (doto entity
+    (->> (for [e entities]
+           (case (:id e)
+             :health (doto e
                        (label! :set-text (str "health " (:health @player-data))))
-             entity))
+             :narration (cond
+                          (nil? (:counter e))
+                          e
+                          (> (:counter e 0) (* 60 5))
+                          (do (label! e :set-text "")
+                            (dissoc e :counter))
+                          :else
+                          (-> e
+                            (update-in [:x] * 0.9)
+                            (update-in [:counter] inc)))
+             e))
          (render! screen)))
   
   :on-resize
@@ -218,25 +264,25 @@
   [screen]
   (let [spider-bubble (assoc (shape :filled
                                     :set-color (color :white)
-                                    :ellipse 0 0 400 100
-                                    :triangle 0 0 0 50 50 50)
+                                    :ellipse 0 0 400 160
+                                    :triangle -10 -10 0 80 60 50)
                              :id :spider-bubble
                              :x 150
-                             :y 400)
-          spider-speech (assoc (label "" (color :black)
-                                      :set-alignment (align :top)
-                                      :set-wrap true)
-                               :id :spider-speech
-                               :x (+ (:x spider-bubble) 50)
-                               :y (+ (:y spider-bubble) 0)
-                               :width 300
-                               :height 80)
-          response (assoc (text-field "" (skin "uiskin.json")
-                                      :set-alignment (align :right))
-                          :id :response-field
-                          :x (- (width screen) 220)
-                          :y 330
-                          :width 200)]
+                             :y 300)
+        spider-speech (assoc (label "" (color :black)
+                                    :set-alignment (align :top)
+                                    :set-wrap true)
+                             :id :spider-speech
+                             :x (+ (:x spider-bubble) 50)
+                             :y (+ (:y spider-bubble) 10)
+                             :width 300
+                             :height 120)
+        response (assoc (text-field "" (skin "uiskin.json")
+                                    :set-alignment (align :right))
+                        :id :response-field
+                        :x (- (width screen) 220)
+                        :y 330
+                        :width 200)]
     [spider-bubble spider-speech response]))
   
 (defscreen spider-screen
@@ -283,20 +329,14 @@
                 spider (find-first :spider? entities)]
             (if (= wrote (:answer spider))
               ;; right
-              (do (println "right!")
+              (do
+                (narrate "Your first triumph has come!")
                 (swap! player-data update-in [:riddles-done] conj (:id spider))
                 (reset! current-screen-k :main))
               ;; wrong
               (println "wrong!"))
             entities
           )))))
-  
-  :on-ui-keyboard-focus-changed
-  (fn [screen entities]
-    (println (:event screen)) ; the FocusListener.FocusEvent - http://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/scenes/scene2d/utils/FocusListener.FocusEvent.html
-    (println (:actor screen)) ; the Actor - http://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/scenes/scene2d/Actor.html
-    (println (:focused? screen)) ; whether it is focused
-    entities)
   
   :on-resize
   (fn [screen entities]
