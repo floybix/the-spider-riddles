@@ -38,7 +38,8 @@
             (if (get (:riddles-done @player-data) (:id e))
               ;; already done this spider's riddle
               e
-              (do (screen! spider-screen :on-enter :which-entity e)
+              (do (screen! spider-screen :on-enter
+                           :which-entities {:player player :spider e})
                 (reset! current-screen-k :spider)
                 e))
             :else
@@ -144,6 +145,8 @@
   
   :on-key-down
   (fn [screen entities]
+    (when (= (:key screen) (key-code :q)) (println "main keydown"))
+    
     (when (= :main @current-screen-k)
       (when-let [player (find-by-id :player entities)]
         (when (= (:key screen) (key-code :space))
@@ -217,6 +220,8 @@
   
   :on-key-down
   (fn [screen entities]
+     (when (= (:key screen) (key-code :w)) (println "status keydown"))
+     
     (let [item-ids (vals @button->item-id)]
       (cond
         (= (:key screen) (key-code :num-1))
@@ -266,65 +271,82 @@
                                     :set-color (color :white)
                                     :ellipse 0 0 400 160
                                     :triangle -10 -10 0 80 60 50)
+                             :speech? true
                              :id :spider-bubble
                              :x 150
                              :y 300)
         spider-speech (assoc (label "" (color :black)
                                     :set-alignment (align :top)
                                     :set-wrap true)
+                             :speech? true
                              :id :spider-speech
                              :x (+ (:x spider-bubble) 50)
                              :y (+ (:y spider-bubble) 10)
                              :width 300
                              :height 120)
-        response (assoc (text-field "" (skin "uiskin.json")
-                                    :set-alignment (align :right))
+        ui-skin (skin "uiskin.json")
+        response (assoc (text-field "" ui-skin
+                                    :set-alignment (align :left))
+                        :speech? true
                         :id :response-field
                         :x (- (width screen) 220)
-                        :y 330
-                        :width 200)]
-    [spider-bubble spider-speech response]))
+                        :y 400
+                        :width 200)
+        response-but (assoc (text-button "Reply" ui-skin)
+                            :speech? true
+                            :id :response-button
+                            :x (+ (:x response) 100)
+                            :y (- (:y response) 30))]
+    [spider-bubble spider-speech response response-but]))
   
+(defn spider-say!
+  [entities text]
+  (label! (find-by-id :spider-speech entities)
+          :set-text text))
+
 (defscreen spider-screen
   :on-show
   (fn [screen _]
-    (let [screen (update! screen :camera (orthographic) :renderer (stage))
-          player (assoc (create-player)
-                        :width 200 :height 200
-                        :x (- (width screen) 200)
-                        :y 100)]
+    (let [screen (update! screen :camera (orthographic) :renderer (stage))]
       (height! screen 600)
-      [player]))
+      (make-speech-bubbles screen)))
   
   :on-render
   (fn [screen entities]
     (when (= :spider @current-screen-k)
       (clear! 0.2 0.2 0.2 1)
-      (->> (for [entity entities]
-             (case (:id entity)
-               entity))
+      (->> entities
         (render! screen))))
   
   :on-enter
   (fn [screen entities]
-    (let [spider (-> (:which-entity screen)
-                   (assoc :width 200 :height 200
-                          :x 50 :y 100))
-          more-ents (make-speech-bubbles screen)]
-      (->> (for [e more-ents]
-             (case (:id e)
-               :spider-speech (doto e (label! :set-text (:riddle spider)))
-               :response-field (doto e (text-field! :set-text ""))
-               e))
-        (concat entities [spider]))))
+    (let [in-ents (:which-entities screen)
+          spider (assoc (:spider in-ents)
+                        :width 200 :height 200
+                        :x 100 :y 100)
+          player (assoc (:player in-ents)
+                        :width 200 :height 200
+                        :x (- (width screen) 200)
+                        :y 100)
+          ]
+      (spider-say! entities (:riddle spider))
+      (into entities
+            [spider player])))
   
-  :on-key-down
+  :on-timer
   (fn [screen entities]
-    (when (= :spider @current-screen-k)
-      (when-let [player (find-by-id :player entities)]
-        (when (= (:key screen) (key-code :enter))
+    (case (:id screen)
+      :say-riddle (let [spider (find-first :spider? entities)]
+                    (spider-say! entities (:riddle spider))
+                    entities)
+      ))
+  
+  :on-ui-changed
+  (fn [screen entities]
+    (stage! screen :set-keyboard-focus nil)
+    (when-let [player (find-by-id :player entities)]
           (let [field (find-by-id :response-field entities)
-                wrote (-> (label! field :get-text)
+                wrote (-> (text-field! field :get-text)
                         (clojure.string/lower-case))
                 spider (find-first :spider? entities)]
             (if (= wrote (:answer spider))
@@ -332,11 +354,17 @@
               (do
                 (narrate "Your first triumph has come!")
                 (swap! player-data update-in [:riddles-done] conj (:id spider))
-                (reset! current-screen-k :main))
+                ;; TODO key
+                (reset! current-screen-k :main)
+                ;; remove actors that came in
+                (remove #(or (:player? %) (:spider? %)) entities)
+                )
               ;; wrong
-              (println "wrong!"))
-            entities
-          )))))
+              (do
+                (spider-say! entities "Wrong.")
+                (add-timer! screen :say-riddle 2)
+                entities)
+          ))))
   
   :on-resize
   (fn [screen entities]

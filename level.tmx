@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="90" height="70" tilewidth="32" tileheight="32" nextobjectid="11">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="90" height="70" tilewidth="32" tileheight="32" nextobjectid="16">
  <tileset firstgid="1" name="terrain_atlas" tilewidth="32" tileheight="32">
   <image source="terrain_atlas.png" width="1024" height="1024"/>
   <terraintypes>
@@ -184,5 +184,6 @@
   <object id="8" name="volcano-1" type="volcano" x="880.211" y="1966.07" width="32" height="32"/>
   <object id="9" name="volcano-2" type="volcano" x="1008.24" y="2014.88" width="32" height="32"/>
   <object id="10" name="lava-step-place" type="place" x="929.823" y="1983.68" width="60" height="60"/>
+  <object id="11" name="pool-shark" type="shark" gid="2052" x="1517.97" y="394.487"/>
  </objectgroup>
 </map>
