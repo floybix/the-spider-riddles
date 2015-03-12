@@ -11,10 +11,11 @@
 (def aggro-distance 6)
 (def attack-distance 1.5)
 
-(def soft-layers #{"path" "bridges"})
-;; note: other layers are hard, e.g. pits
+(def hard-layers #{"pits" })
+;; note: other layers are soft
 
-(def jump-layers #{"path" "bridges" "lava" "lake of terror"})
+(def player-layers #{"path" "bridges" "lava"})
+(def float-layers #{"Shark pool" "lake of terror"})
 
 (def jump-add-seq (concat (repeat 30 0.05) (repeat 30 -0.05)))
 
@@ -51,9 +52,9 @@
 
 (defn on-layer-ok?
   [screen entity layer-name]
-  (if (soft-layers layer-name)
-    (centre-on-layer? screen entity layer-name 0.5)
-    (centre-on-layer? screen entity layer-name 1.0)))
+  (if (hard-layers layer-name)
+    (centre-on-layer? screen entity layer-name 1.0)
+    (centre-on-layer? screen entity layer-name 0.5)))
 
 (defn near-entity?
   [e e2 min-distance]

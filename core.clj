@@ -42,6 +42,11 @@
                            :which-entities {:player player :spider e})
                 (reset! current-screen-k :spider)
                 e))
+            ;; meet sharks
+            (:shark? e)
+            (do
+              
+              e)
             :else
             e)
           e))
@@ -63,7 +68,7 @@
     (let [renderer (orthogonal-tiled-map "level.tmx" (/ 1 pixels-per-tile))
           screen (update! screen :camera (orthographic) :renderer renderer)
           player (assoc (create-player)
-                        :walk-layers #{"path" "bridges"}
+                        :walk-layers player-layers
                         :x 5 :y (- (dec map-height) 24))
           spiders [(assoc (create-spider screen "spider-1")
                           :walk-layers #{"pits"}
@@ -76,17 +81,26 @@
                    (assoc (create-spider screen "spider-2")
                           :riddle (str "Put riddle here.")
                           :answer "foo")]
+          pool-shark (create-shark screen "pool-shark")
           rope (assoc (create-entity-from-object-layer screen "rope")
                       :item? true
                       :in-pits? true)
           sword (assoc (create-entity-from-object-layer screen "sword")
                        :item? true)
-          volc-1 (merge (particle-effect "fire.p" :scale-effect 0.02)
-                        (rectangle-from-object-layer screen "volcano-1"))
+          floaty (assoc (create-entity-from-object-layer screen "floaty")
+                       :item? true)
+          wand (assoc (create-entity-from-object-layer screen "wand")
+                       :item? true)
+          lava-step (assoc (create-entity-from-object-layer screen "lava-step")
+                       :item? true)
+          volcs [(create-eruption screen "volcano-1")
+                 (create-eruption screen "volcano-2")]
           ]
       (add-timer! screen :eruption 5 5)
-      (concat [player rope sword volc-1]
-              spiders)))
+      (concat [player rope sword floaty wand lava-step]
+              [pool-shark]
+              spiders
+              volcs)))
   
   :on-timer
   (fn [screen entities]
@@ -134,13 +148,31 @@
                      nil))
         :rope (if (and (:in-pits? player)
                        (on-layer-ok? screen player "bridges"))
-                (do (narrate "Ah, this rope is so useful!")
+                (do (narrate "Ah, this rope is so useful!!!")
                   (->> (assoc player
-                              :walk-layers #{"path" "bridges"}
+                              :walk-layers player-layers
                               :in-pits? nil)
                     (conj (remove :player? entities))))
-                (do (narrate "Oops, not there!")
+                (do (narrate "Oops, not there!!!")
                   nil))
+        :floaty (if (and (some #(touching-layer? screen player %) float-layers)
+                         (not (:floating? player)))
+                  (do (narrate "keep up the floating!!!")
+                    (->> (assoc player
+                               :walk-layers (into (:walk-layers player) float-layers)
+                               :floating? true)
+                     (conj (remove :player? entities))))
+                  (do (narrate "Don't have time to play with toys now!!!")
+                    nil
+                    ))
+        :wand (do
+                (narrate "")
+                nil)
+        :lava-step (if (touching-layer? screen player "lava")
+                     (do (narrate "Hop, skip and jump!!!")
+                       )
+                     (do (narrate "Be careful! Don't drop it on your foot!!!")
+                       ))
         )))
   
   :on-key-down
@@ -206,8 +238,9 @@
       (case (:id e)
         :sword (narrate "Your holely sword has been brought to you!")
         :rope (narrate "You find a small rope in a pit.")
-        :floaty (narrate "What a surprise! A floaty.")
-        :wand (narrate "A wand! Do some magic!"))
+        :floaty (narrate "What a surprise! A floaty!")
+        :wand (narrate "A wand! Do some magic!")
+        :lava-step (narrate "you find a big stepping stone!"))
       (swap! button->item-id assoc (:object button) (:id e))
       (add! item-table held-e)
       entities))
@@ -292,7 +325,7 @@
                         :x (- (width screen) 220)
                         :y 400
                         :width 200)
-        response-but (assoc (text-button "Reply" ui-skin)
+        response-but (assoc (text-button "OK" ui-skin)
                             :speech? true
                             :id :response-button
                             :x (+ (:x response) 100)

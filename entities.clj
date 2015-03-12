@@ -72,17 +72,42 @@
                :hurt-sound (sound "enemy_hurt.wav"))
         (merge (select-keys obj-info [:id :x :y])))))
 
+(defn create-shark
+  [screen obj-name]
+  (let [obj-info (create-entity-from-object-layer screen obj-name)
+        fin (texture "shark-fin.png")
+        attack (texture "shark-front-bite.png")]
+    (-> (create-character float-layers fin fin fin fin)
+        (assoc :shark? true
+               :npc? true
+               :angle 0
+               :up nil
+               :down nil
+               :left nil
+               :right nil
+               :fin fin
+               :attack attack
+               :hurt-sound (sound "enemy_hurt.wav"))
+        (merge (select-keys obj-info [:id :x :y])))))
+
 (defn create-player
   []
   (let [down (texture "elf-front.png")
         up (texture "elf-back.png")
         stand-left (texture "elf-left-walk.png" :set-region 0 0 64 64)
-        walk-left (texture "elf-left-walk.png" :set-region 64 0 64 64)]
+        walk-left (texture "elf-left-walk.png" :set-region 64 0 64 64)
+        float (texture "elf-front-floaty.png")]
     (assoc (create-character #{"path"} down up stand-left walk-left)
            :player? true
            :id :player
+           :float float
            :hurt-sound (sound "player_hurt.wav")
            :death-sound (sound "player_death.wav"))))
+
+(defn create-eruption
+  [screen obj-name]
+  (merge (particle-effect "fire.p" :scale-effect 0.02)
+         (rectangle-from-object-layer screen obj-name)))
 
 (defn move
   [screen entities entity]
@@ -101,7 +126,8 @@
 
 (defn animate
   [screen entity]
-  (if (:jumping? entity)
+  (cond
+    (:jumping? entity)
     (if-let [add (first (:jump-seq entity))]
       (-> entity
         (update-in [:width] + add)
@@ -112,6 +138,12 @@
       ;; end of jump
       (assoc entity :jumping? nil :jump-seq nil)
       )
+    (:floating? entity)
+    (merge entity (:float entity))
+    (:shark? entity)
+    (let [angle (Math/atan2 (:x-change entity) (:y-change entity))]
+      (assoc entity :angle angle))
+    :else
     (if-let [direction (get-direction entity)]
       (if-let [anim (get entity direction)]
         (merge entity
