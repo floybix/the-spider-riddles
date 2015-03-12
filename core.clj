@@ -120,7 +120,7 @@
       (->> entities
         (map (fn [entity]
                (->> entity
-                 (move screen entities)
+                 (move screen)
                  (animate screen)
                  (prevent-move screen entities))))
         (interact)
@@ -175,32 +175,53 @@
                        ))
         )))
   
+  :on-solve-riddle
+  (fn [screen entities]
+    (narrate "Your first triumph has come!")
+    (swap! player-data update-in [:riddles-done] conj (:spider-id screen))
+    ;; TODO key
+    entities
+    )
+  
+  :on-give-up-riddle
+  (fn [screen entities]
+    (narrate "This is bad...")
+    (swap! player-data update-in [:riddles-done] conj (:spider-id screen))
+    entities
+    )
+                  
   :on-key-down
   (fn [screen entities]
-    (when (= (:key screen) (key-code :q)) (println "main keydown"))
-    
     (when (= :main @current-screen-k)
       (when-let [player (find-by-id :player entities)]
-        (when (= (:key screen) (key-code :space))
-          (->> (start-jump player)
-            (conj (remove :player? entities)))
-          ))))
+        (->>
+          (cond->
+            player
+            ;; jump
+            (= (:key screen) (key-code :space))
+            (start-jump)
+            )
+          (conj (remove :player? entities))))))
   
   :on-touch-down
   (fn [screen entities]
     (when (= :main @current-screen-k)
       (when-let [player (find-by-id :player entities)]
-        (let [min-x (/ (game :width) 3)
-              max-x (* (game :width) (/ 2 3))
-              min-y (/ (game :height) 3)
-              max-y (* (game :height) (/ 2 3))]
-          (when (and (< min-x (game :x) max-x)
-                     (< min-y (game :y) max-y))
-            (->> (start-jump player)
-              (conj (remove :player? entities)))
-            )))))
+        (let [x (game :x)
+              y (game :y)
+              width (game :width)
+              height (game :height)]
+          (println x y width height)
+          (->>
+            (cond->
+              player
+              ;; jump
+              (and (< (* width 0.45) x (* width 0.55))
+                   (< (* height 0.45) y (* width 0.55)))
+              (start-jump)
+              )
+            (conj (remove :player? entities)))))))
   )
-
 
 ;;;; status screen - items, health
 
@@ -210,7 +231,7 @@
   :on-show
   (fn [screen _]
     (let [screen (update! screen :camera (orthographic) :renderer (stage))]
-      (height! screen 600)
+      (height! screen 500)
       [(assoc (vertical [] :left :reverse)
               :id :item-table
               :y 0)
@@ -231,7 +252,7 @@
               (update-in [:width] * pixels-per-tile)
               (update-in [:height] * pixels-per-tile))
           ui-skin (skin "uiskin.json")
-          button (text-button "Use" ui-skin)
+          button (text-button " Use " ui-skin)
           item-table (find-by-id :item-table entities)
           held-e (horizontal [(image e) button])
           ]
@@ -240,7 +261,7 @@
         :rope (narrate "You find a small rope in a pit.")
         :floaty (narrate "What a surprise! A floaty!")
         :wand (narrate "A wand! Do some magic!")
-        :lava-step (narrate "you find a big stepping stone!"))
+        :lava-step (narrate "You find a big stepping stone!"))
       (swap! button->item-id assoc (:object button) (:id e))
       (add! item-table held-e)
       entities))
@@ -253,8 +274,6 @@
   
   :on-key-down
   (fn [screen entities]
-     (when (= (:key screen) (key-code :w)) (println "status keydown"))
-     
     (let [item-ids (vals @button->item-id)]
       (cond
         (= (:key screen) (key-code :num-1))
@@ -286,14 +305,14 @@
                             (dissoc e :counter))
                           :else
                           (-> e
-                            (update-in [:x] * 0.9)
+                            (update-in [:x] #(int (* % 0.9)))
                             (update-in [:counter] inc)))
              e))
          (render! screen)))
   
   :on-resize
   (fn [screen entities]
-    (height! screen 600)))
+    (height! screen 500)))
 
 
 ;;;; spider screen - sub-game for riddles, fighting
@@ -304,14 +323,12 @@
                                     :set-color (color :white)
                                     :ellipse 0 0 400 160
                                     :triangle -10 -10 0 80 60 50)
-                             :speech? true
                              :id :spider-bubble
                              :x 150
                              :y 300)
         spider-speech (assoc (label "" (color :black)
                                     :set-alignment (align :top)
                                     :set-wrap true)
-                             :speech? true
                              :id :spider-speech
                              :x (+ (:x spider-bubble) 50)
                              :y (+ (:y spider-bubble) 10)
@@ -320,17 +337,19 @@
         ui-skin (skin "uiskin.json")
         response (assoc (text-field "" ui-skin
                                     :set-alignment (align :left))
-                        :speech? true
                         :id :response-field
                         :x (- (width screen) 220)
                         :y 400
                         :width 200)
-        response-but (assoc (text-button "OK" ui-skin)
-                            :speech? true
+        response-but (assoc (text-button " Reply " ui-skin)
                             :id :response-button
-                            :x (+ (:x response) 100)
+                            :x (+ (:x response) 50)
+                            :y (- (:y response) 30))
+        give-up-but (assoc (text-button "give up" ui-skin)
+                            :id :give-up-button
+                            :x (+ (:x response) 120)
                             :y (- (:y response) 30))]
-    [spider-bubble spider-speech response response-but]))
+    [spider-bubble spider-speech response response-but give-up-but]))
   
 (defn spider-say!
   [entities text]
@@ -360,8 +379,7 @@
           player (assoc (:player in-ents)
                         :width 200 :height 200
                         :x (- (width screen) 200)
-                        :y 100)
-          ]
+                        :y 100)]
       (spider-say! entities (:riddle spider))
       (into entities
             [spider player])))
@@ -372,40 +390,47 @@
       :say-riddle (let [spider (find-first :spider? entities)]
                     (spider-say! entities (:riddle spider))
                     entities)
+      :solved-riddle (let [spider (find-first :spider? entities)]
+                       (screen! main-screen :on-solve-riddle :spider-id (:id spider))
+                       (reset! current-screen-k :main)
+                       ;; remove actors that came in
+                       (remove #(or (:player? %) (:spider? %)) entities))
+      :give-up (let [spider (find-first :spider? entities)]
+                 (screen! main-screen :on-give-up-riddle :spider-id (:id spider))
+                 (reset! current-screen-k :main)
+                 ;; remove actors that came in
+                 (remove #(or (:player? %) (:spider? %)) entities))
       ))
   
   :on-ui-changed
   (fn [screen entities]
     (stage! screen :set-keyboard-focus nil)
     (when-let [player (find-by-id :player entities)]
+      (if (= (:actor screen) (:object (find-by-id :response-button entities)))
           (let [field (find-by-id :response-field entities)
                 wrote (-> (text-field! field :get-text)
                         (clojure.string/lower-case))
                 spider (find-first :spider? entities)]
             (if (= wrote (:answer spider))
-              ;; right
               (do
-                (narrate "Your first triumph has come!")
-                (swap! player-data update-in [:riddles-done] conj (:id spider))
-                ;; TODO key
-                (reset! current-screen-k :main)
-                ;; remove actors that came in
-                (remove #(or (:player? %) (:spider? %)) entities)
-                )
-              ;; wrong
+                (spider-say! entities "Correct.")
+                (add-timer! screen :solved-riddle 2)
+                entities)
               (do
                 (spider-say! entities "Wrong.")
                 (add-timer! screen :say-riddle 2)
                 entities)
-          ))))
+              ))
+          ;; gave up
+          (do
+            (spider-say! entities "qqqqqqqqqqqqq")
+            (add-timer! screen :give-up 2)
+            entities)
+          )))
   
   :on-resize
   (fn [screen entities]
     (height! screen 600))
-  
-  ;:on-touch-down
-  ;(fn [screen entities]
-  ;  )
   )
 
 (set-game-screen! main-screen spider-screen status-screen)

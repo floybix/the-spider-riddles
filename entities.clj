@@ -110,8 +110,11 @@
          (rectangle-from-object-layer screen obj-name)))
 
 (defn move
-  [screen entities entity]
-  (let [[x-velocity y-velocity] (get-velocity entities entity)
+  [screen entity]
+  (let [[x-velocity y-velocity] (if (:player? entity)
+                                  (get-player-velocity entity)
+                                  [(:x-velocity entity 0)
+                                   (:y-velocity entity 0)])
         x-change (* x-velocity (:delta-time screen))
         y-change (* y-velocity (:delta-time screen))]
     (if (or (not= 0 x-change) (not= 0 y-change))
@@ -210,11 +213,8 @@
           (> (:x entity) (- map-width 1))
           (< (:y entity) 0)
           (> (:y entity) (- map-height 1))
-          (let [layers (if (:jumping? entity)
-                         jump-layers
-                         (:walk-layers entity))]
-            (not (some #(on-layer-ok? screen entity %)
-                       layers))))
+          (not (some #(on-layer-ok? screen entity %)
+                     (:walk-layers entity))))
     (assoc entity
            :x-velocity 0
            :y-velocity 0

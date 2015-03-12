@@ -78,10 +78,14 @@
   [key]
   (and (game :touched?)
        (case key
-         :down (< (game :y) (/ (game :height) 3))
-         :up (> (game :y) (* (game :height) (/ 2 3)))
-         :left (< (game :x) (/ (game :width) 3))
-         :right (> (game :x) (* (game :width) (/ 2 3)))
+         :up (> (game :y) (* (game :height) 0.6))
+         :down (and (< (game :y) (* (game :height) 0.4))
+                    ;; avoid buttons
+                    (> (game :x) (* (game :width) 0.2)))
+         :left (and (< (game :x) (* (game :width) 0.4))
+                    ;; avoid buttons
+                    (> (game :x) (* (game :width) 0.2)))
+         :right (> (game :x) (* (game :width) 0.6))
          false)))
 
 (defn get-player-velocity
