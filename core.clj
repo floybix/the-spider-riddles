@@ -23,40 +23,57 @@
   [entities]
   (when-let [player (find-by-id :player entities)]
     (->>
-      (for [e entities]
-        ;; something we can touch?
-        (if (and (near-entity? player e 1)
-                 (= (:in-pits? e) (:in-pits? player)))
-          (cond
-            ;; pick up items
-            (:item? e)
-            (do (screen! status-screen :on-pick-up-item :which-entity e)
-              ;; nil to remove from screen
-              nil)
-            ;; meet spiders
-            (:spider? e)
-            (if (get (:riddles-done player) (:id e))
-              ;; already done this spider's riddle, ignore it
-              e
-              (do (screen! spider-screen :on-enter
-                           :which-entities {:player player :spider e})
-                (reset! current-screen-k :spider)
-                e))
-            ;; meet sharks
-            (:shark? e)
-            (do
-              
-              e)
-            :else
-            e)
-          e))
-      (remove nil?))))
+     entities
+     (reduce (fn [entities e]
+               ;; something we can touch?
+               (if (or (:player? e)
+                       (not (near-entity? player e 1))
+                       (not= (:in-pits? e) (:in-pits? player)))
+                 entities
+                 ;; can touch
+                 (cond
+                  ;; pick up items
+                  (:item? e)
+                  (do (screen! status-screen :on-pick-up-item :which-entity e)
+                      ;; remove from screen
+                      (remove #(= (:id %) (:id e)) entities))
+                  ;; meet spiders
+                  (:spider? e)
+                  (cond
+                   ;; attack
+                   (:chasing? e)
+                   entities
+                   ;; already done this spider's riddle, ignore it
+                   (get (:riddles-done player) (:id e))
+                   entities
+                   ;; new riddle
+                   :else
+                   (do (screen! spider-screen :on-enter
+                                :which-entities {:player player :spider e})
+                       (reset! current-screen-k :spider)
+                       entities))
+                  ;; meet sharks
+                  (:shark? e)
+                  (do
+                    ;; attack
+                    entities)
+                  ;; meet volcanos
+                  (:volcano? e)
+                  entities
+                  :all-others
+                  entities)))
+             entities))))
 
 (defn act
   [screen entities entity]
   (cond
    (:player? entity)
-   (merge entity (get-player-velocities entity))
+   (cond-> (merge entity (get-player-velocities entity))
+           ;; if not touching water any more
+           (and (:floating? entity)
+                (not (some #(touching-layer? screen entity %) float-layers)))
+           (assoc :floating? false
+                  :walk-layers (apply disj (:walk-layers entity) float-layers)))
    ;; spiders
    (:spider? entity)
    (cond
@@ -64,17 +81,22 @@
     (chase entity (find-by-id :player entities))
     :else
     entity)
-   ;; sharks
-   (:shark? entity)
+   ;; pool shark
+   (= :pool-shark (:id entity))
    (cond
-    (:chasing? entity)
+    (let [player (find-by-id :player entities)]
+      (and (touching-layer? screen player "Shark pool")
+           (not (:invisible? player))))
     (chase entity (find-by-id :player entities))
     ;; go round in circles
-    (= :pool-shark (:id entity))
-    (go-round-and-round entity)
     :else
-    entity)
-   :others...
+    (go-round-and-round entity))
+   ;; lake sharks
+   (:shark? entity)
+   (cond
+    true
+    (chase entity (find-by-id :player entities)))
+   :else
    entity))
 
 (defn render-with-overlaps
@@ -124,12 +146,11 @@
                        :item? true)
           pool-shark (assoc (create-shark screen "pool-shark")
                        :focus-point [(:x lava-step) (:y lava-step)])
-          volcs [(create-eruption screen "volcano-1")
-                 (create-eruption screen "volcano-2")]
+          volcs [(create-volcano screen "volcano-1")
+                 (create-volcano screen "volcano-2")]
           ]
       (add-timer! screen :eruption 5 5)
-      (concat [player rope sword floaty wand lava-step]
-              [pool-shark]
+      (concat [player rope sword floaty wand lava-step pool-shark]
               spiders
               volcs)))
   

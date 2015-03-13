@@ -89,8 +89,8 @@
         :y-velocity (- fy y))
       ;; ok
       (assoc entity
-        :x-velocity (* (- y fy) -1)
-        :y-velocity (- x fx)
+        :x-velocity 0
+        :y-velocity 0
        ))))
 
 (defn chase

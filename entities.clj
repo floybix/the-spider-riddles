@@ -91,10 +91,11 @@
            :hurt-sound (sound "player_hurt.wav")
            :death-sound (sound "player_death.wav"))))
 
-(defn create-eruption
+(defn create-volcano
   [screen obj-name]
-  (merge (particle-effect "fire.p" :scale-effect 0.02)
-         (rectangle-from-object-layer screen obj-name)))
+  (-> (merge (particle-effect "fire.p" :scale-effect 0.02)
+             (rectangle-from-object-layer screen obj-name))
+      (assoc :volcano? true)))
 
 (defn move
   [screen entity]
