@@ -243,9 +243,24 @@
        (assoc (label "health 100" (color :yellow))
               :id :health-text
               :x (- (width screen) 100) :y 10)
+       (assoc (shape :filled
+                     :set-color (color :black)
+                     :rect 0 0 10 102
+                     :set-color (color :gray)
+                     :rect 1 1 8 100)
+         :id :health-bar-bg
+         :x (- (width screen) 20)
+         :y 10)
+       (assoc (shape :filled
+                     :set-color (color :green)
+                     :rect 1 1 8 100)
+         :id :health-bar
+         :x (- (width screen) 20)
+         :y 10
+         :scale-y 1.0)
        (assoc (label start-story (color :white))
               :id :narration
-              :x (width screen)
+              :x 10
               :y (- (height screen) 100)
               :height 50)]
     ))
@@ -315,7 +330,14 @@
   
   :on-resize
   (fn [screen entities]
-    (height! screen 500)))
+    (height! screen 500)
+    (for [e entities]
+      (case (:id e)
+        :health-bar-bg (assoc e :x (- (width screen) 20))
+        :health-bar (assoc e :x (- (width screen) 20))
+        :health-text (assoc e :x (- (width screen) 100))
+        e)))
+  )
 
 
 ;;;; spider screen - sub-game for riddles, fighting
