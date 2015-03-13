@@ -1,10 +1,5 @@
 (load-game-file "utils.clj")
 
-(def player-data
-  (atom {:health 100
-         :riddles-done #{}
-         }))
-
 (defn create-entity
   [img]
   (assoc img
@@ -57,10 +52,7 @@
            :down (animation duration [down down-flip])
            :up (animation duration [up up-flip])
            :left (animation duration [stand-left walk-left])
-           :right (animation duration [stand-flip walk-flip])
-           :health 10
-           :damage 4
-           :attack-time 0)))
+           :right (animation duration [stand-flip walk-flip]))))
 
 (defn create-spider
   [screen obj-name]
@@ -68,7 +60,6 @@
         down (texture "spider-front.png")]
     (-> (create-character #{"path"} down down down down)
         (assoc :spider? true
-               :npc? true
                :hurt-sound (sound "enemy_hurt.wav"))
         (merge (select-keys obj-info [:id :x :y])))))
 
@@ -79,7 +70,6 @@
         attack (texture "shark-front-bite.png")]
     (-> (create-character float-layers fin fin fin fin)
         (assoc :shark? true
-               :npc? true
                :angle 0
                :up nil
                :down nil
@@ -97,9 +87,11 @@
         stand-left (texture "elf-left-walk.png" :set-region 0 0 64 64)
         walk-left (texture "elf-left-walk.png" :set-region 64 0 64 64)
         float (texture "elf-front-floaty.png")]
-    (assoc (create-character #{"path"} down up stand-left walk-left)
+    (assoc (create-character player-layers down up stand-left walk-left)
            :player? true
            :id :player
+           :health 100
+           :riddles-done #{}
            :float float
            :hurt-sound (sound "player_hurt.wav")
            :death-sound (sound "player_death.wav"))))

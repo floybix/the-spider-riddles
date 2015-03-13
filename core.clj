@@ -35,8 +35,8 @@
               nil)
             ;; meet spiders
             (:spider? e)
-            (if (get (:riddles-done @player-data) (:id e))
-              ;; already done this spider's riddle
+            (if (get (:riddles-done player) (:id e))
+              ;; already done this spider's riddle, ignore it
               e
               (do (screen! spider-screen :on-enter
                            :which-entities {:player player :spider e})
@@ -61,6 +61,12 @@
                   (map (fn [e] (if (particle-effect? e) (x-centered e) e)))))
   entities)
 
+(defn try-jump
+  [player]
+  (if (:in-pits? player)
+    (narrate "qqqqqqqq"))
+  (start-jump player))
+
 (defscreen main-screen
   :on-show
   (fn [screen _]
@@ -68,7 +74,6 @@
     (let [renderer (orthogonal-tiled-map "level.tmx" (/ 1 pixels-per-tile))
           screen (update! screen :camera (orthographic) :renderer renderer)
           player (assoc (create-player)
-                        :walk-layers player-layers
                         :x 5 :y (- (dec map-height) 24))
           spiders [(assoc (create-spider screen "spider-1")
                           :walk-layers #{"pits"}
@@ -177,31 +182,35 @@
   
   :on-solve-riddle
   (fn [screen entities]
-    (narrate "Your first triumph has come!")
-    (swap! player-data update-in [:riddles-done] conj (:spider-id screen))
+    (when-let [player (find-by-id :player entities)]
+      (case (count (:riddles-done player))
+        0 (narrate "Your first triumph has come!")
+        1 (narrate "")
+        2 (narrate "")
+        3 (narrate "")
+        )
+      (->> (update-in player [:riddles-done] conj (:spider-id screen))
+           (conj (remove :player entities)))
+      )
     ;; TODO key
-    entities
     )
   
   :on-give-up-riddle
   (fn [screen entities]
-    (narrate "This is bad...")
-    (swap! player-data update-in [:riddles-done] conj (:spider-id screen))
-    entities
+    (when-let [player (find-by-id :player entities)]
+      (narrate "This is bad...")
+      (->> (update-in player [:riddles-done] conj (:spider-id screen))
+           (conj (remove :player entities))))
     )
                   
   :on-key-down
   (fn [screen entities]
     (when (= :main @current-screen-k)
       (when-let [player (find-by-id :player entities)]
-        (->>
-          (cond->
-            player
-            ;; jump
-            (= (:key screen) (key-code :space))
-            (start-jump)
-            )
-          (conj (remove :player? entities))))))
+        (if  (= (:key screen) (key-code :space))
+          (->> (try-jump player)
+               (conj (remove :player? entities)))
+          ))))
   
   :on-touch-down
   (fn [screen entities]
@@ -211,16 +220,12 @@
               y (game :y)
               width (game :width)
               height (game :height)]
-          (println x y width height)
-          (->>
-            (cond->
-              player
-              ;; jump
-              (and (< (* width 0.45) x (* width 0.55))
+          (if (and (< (* width 0.45) x (* width 0.55))
                    (< (* height 0.45) y (* width 0.55)))
-              (start-jump)
-              )
-            (conj (remove :player? entities)))))))
+            (->>
+             (try-jump player)
+             (conj (remove :player? entities)))
+            )))))
   )
 
 ;;;; status screen - items, health
@@ -235,8 +240,8 @@
       [(assoc (vertical [] :left :reverse)
               :id :item-table
               :y 0)
-       (assoc (label "" (color :yellow))
-              :id :health
+       (assoc (label "health 100" (color :yellow))
+              :id :health-text
               :x (- (width screen) 100) :y 10)
        (assoc (label start-story (color :white))
               :id :narration
@@ -295,8 +300,6 @@
   (fn [screen entities]
     (->> (for [e entities]
            (case (:id e)
-             :health (doto e
-                       (label! :set-text (str "health " (:health @player-data))))
              :narration (cond
                           (nil? (:counter e))
                           e
