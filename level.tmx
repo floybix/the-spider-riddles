@@ -133,7 +133,7 @@
  </layer>
  <layer name="path" width="90" height="70">
   <data encoding="base64" compression="zlib">
-   eJztnOFtwyAQRlmh3SSZpM0kbSdJO3FjVaeeCGAD5uOA70n8ihPDM+A7Y+IcmYm3R3k/qdzAda9B6ozi41E+TypfwHrXInVGIZ5fHuW7svwA612CjN2r+28zCvE8Ul8sRY/dzTGyX6zieevLuh+jx94qnnVf7tHW1Tz36Mv6/Kt47tXO3udH0budvc+PQN8D6bkdyHtgLL/ufZ1bg47n9vLrWT2j44y9/Np6zlwKel5cYR4OQc8Y6BnDjJ4lprH0vP/uyu4/pesfEttcCr8fKr7PmcbMmesftcX3OaPnWHyGKK9uHc892xKrg4W61eKvbdFzG/x5mZ7bIPGJzI06bogRik18jsYSmpk9C6F4o+ZYfe2OjpeVPOt4I8bdPccKR49LxfUreeb83JbSPLIGf56P5ZYWYqGRyc1B6bmM3Bx01jWD1sw071qGnjHQMwZ6xkDPGOgZg3iWvMTS+t9M+HkKfbfBfybLvK8tm2/tmp7b0Xufxyr03uexCozxMNAzBnrGoHOWlePn1HuOt51jjnhjvPFHao1J8rjrzue+c31d9HdX9hx6RyD0fobEZrHPtPPQdbES1+k+0HseC7mXdbyc66LXCHs79t83HHF8pdxbaIu/J9Dy+m/uvgAL72aE/g/GoltN6b6AHp5Dc8QIjjdK9wW0altqfPn34VEcb1jL6/bGl/V5OIYlz3JfS42tkdxqerwPGcPSNZ8ZesZAzxjoGQM9hznjP3b1Mx96fkY/W6gpF2crp7dCLPfNySW3knoWSM/5e99yfmf0XIQQsha/kZ9g6A==
+   eJztnFtywyAMRdlCs5NkJW1WknYlaVdcMxlNNRSweUky3DPDV5wYH/OQjIlzYCbet/LRqdyF694C1VmKx1Y+O5UvwXq3QnWWgjy/beW7sfwI1rsG6rs393fNUpDnM7XFWnjf9Y4l28Uqnn1b5u1Yuu+t4pm3ZY1rXc2zRlvm51/Fs9Z1ap9fCu3r1D6/BHwOhOdxSM6Bqfxa+z6PRjqe28uvZ/UsHWfs5dfWc+ZapMfFFcbhGPAsw4yeaa619Bx6Rs/W+kxL3Fy7/kHnu1Z+P1bCdmvN89O95viLK69Tz/WP1hLW3Zpnwvsujad6rn/Ulos7l+caLFxLqg4W6tZKuLYFz2MIx2V4HgOfO8O4IUUsNgk5GktwZvZMxOKNlmP5vTvaX1byzOONFE/3P1Y4elwuDlrJM8bnsVDbk3yOGY7zqdzSQix0ZkpzUHiuozQHnXXNYDQzjbuWgWcZ4FkGeJYBnmWAZxnIM+UlltZZZyLMU+B7DOEzWeR9Y/G+uWt4Hof2Po9V0N7nsQqI8WSAZxngWQaes6wcP+fec7zvHHPEG+KNF7k1Jsrjbjufh875feHfXdlz7B2B2PsZFJulPuPOY/dFO65r6ZOjiLmndbyS+8LXCLVj51i/1b73peTcWxgrwj2Bltd/S/cFWHg3I/Z/MBbdcmr3BWh4Dv2exbGndl/AqGvL9a9wHj6LY4+1vG6vf1kfh1NY8kzzWq5vncktx5JnS3XpjcZ7pylm9mwJeJYBnmWA5zg9/mOXP++B5xepfRMt5Rr5vdU9p3KI0lzSl9yzwNU9556r9votKzEmAADs8Qv/V2oe
   </data>
  </layer>
  <layer name="pits" width="90" height="70">
@@ -143,7 +143,7 @@
  </layer>
  <layer name="Shark pool" width="90" height="70">
   <data encoding="base64" compression="zlib">
-   eJzt1UEKgkAYhmE9T52jTR2jWlTHqBbWMaqFdchGUBgGoYWTkTwPfAtbxcuPFgUA8C92ZVHsox3KX/+j6Wkar8Iu0a46Z9PdcNpY53z6bjje0vsjiyrpug7bhG3ddVZV0ngRdgo765xV3PnYNtY5v7jzLeze7hH9Pgt76TxI+n7um1seTudx1KHhXOdRfLppnfNobvoZrbvvWfvsG/gdtb4AAAAAAAAAAAAAAAAAAAAAADBpb8mLQUk=
+   eJzt1UEOwVAUhtF2PboOE5aBAZaBAZaBQWuRXhOS5qVB4opozkn+efPl5rUoAIB/sSyLYtXZuvz1Fw3Lo+807dDZUecwy56+j03cdIhnjbWOs8+aztLmaQvvR5j8ltvG47Rt2k7nMPktb+6NdY6Vdz6lne+76BymTu2qF/9AnWPkN923UdpV54+8c9NuOcarm9Y5RnvTTWdV571ovBlfU+sLAAAAAAAAAAAAAAAAAAAAAACDdgMnXUTL
   </data>
  </layer>
  <layer name="lava" width="90" height="70">
@@ -183,14 +183,14 @@
  </layer>
  <objectgroup name="entities">
   <object id="1" name="rope" type="item" gid="2049" x="780" y="831"/>
-  <object id="3" name="lava-step" type="item" gid="2053" x="1409" y="390"/>
+  <object id="3" name="lava-step" type="item" gid="2053" x="1414.6" y="387.599"/>
   <object id="4" name="spider-1" type="spider" gid="2054" x="388.101" y="909.01"/>
   <object id="5" name="spider-2" type="spider" gid="2054" x="845.811" y="291.262"/>
   <object id="7" name="sword" type="item" gid="2050" x="204.857" y="820.189"/>
   <object id="8" name="volcano-1" type="volcano" x="880.211" y="1966.07" width="32" height="32"/>
   <object id="9" name="volcano-2" type="volcano" x="1008.24" y="2014.88" width="32" height="32"/>
   <object id="10" name="lava-step-place" type="place" x="929.823" y="1983.68" width="60" height="60"/>
-  <object id="11" name="pool-shark" type="shark" gid="2052" x="1517.97" y="394.487"/>
+  <object id="11" name="pool-shark" type="shark" gid="2052" x="1525.2" y="393.687"/>
   <object id="17" name="floaty" gid="2055" x="974.642" y="873.802"/>
   <object id="18" name="wand" gid="2051" x="1393.14" y="112.019"/>
   <object id="20" name="key" gid="2056" x="103.232" y="927.415"/>

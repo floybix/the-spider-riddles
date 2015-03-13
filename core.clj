@@ -52,6 +52,31 @@
           e))
       (remove nil?))))
 
+(defn act
+  [screen entities entity]
+  (cond
+   (:player? entity)
+   (merge entity (get-player-velocities entity))
+   ;; spiders
+   (:spider? entity)
+   (cond
+    (:chasing? entity)
+    (chase entity (find-by-id :player entities))
+    :else
+    entity)
+   ;; sharks
+   (:shark? entity)
+   (cond
+    (:chasing? entity)
+    (chase entity (find-by-id :player entities))
+    ;; go round in circles
+    (= :pool-shark (:id entity))
+    (go-round-and-round entity)
+    :else
+    entity)
+   :others...
+   entity))
+
 (defn render-with-overlaps
   [screen entities]
   (render-map-fixed! screen :without "bridges")
@@ -86,7 +111,6 @@
                    (assoc (create-spider screen "spider-2")
                           :riddle (str "Put riddle here.")
                           :answer "foo")]
-          pool-shark (create-shark screen "pool-shark")
           rope (assoc (create-entity-from-object-layer screen "rope")
                       :item? true
                       :in-pits? true)
@@ -98,6 +122,8 @@
                        :item? true)
           lava-step (assoc (create-entity-from-object-layer screen "lava-step")
                        :item? true)
+          pool-shark (assoc (create-shark screen "pool-shark")
+                       :focus-point [(:x lava-step) (:y lava-step)])
           volcs [(create-eruption screen "volcano-1")
                  (create-eruption screen "volcano-2")]
           ]
@@ -125,9 +151,10 @@
       (->> entities
         (map (fn [entity]
                (->> entity
-                 (move screen)
-                 (animate screen)
-                 (prevent-move screen entities))))
+                    (act screen entities)
+                    (move screen)
+                    (animate screen)
+                    (prevent-move screen entities))))
         (interact)
         (play-sounds!)
         (sort-by :y >)
@@ -187,7 +214,10 @@
         3 (narrate "")
         )
       (update-by-id entities :player
-                    update-in [:riddles-done] conj (:spider-id screen))
+                    (fn [e]
+                      (-> e
+                          (update-in [:riddles-done] conj (:spider-id screen))
+                          (update-in [:keys-won] conj (:spider-id screen)))))
       )
     ;; TODO key
     )
@@ -196,11 +226,12 @@
   (fn [screen entities]
     (when-let [player (find-by-id :player entities)]
       (narrate "This is bad...")
-      (update-by-id entities :player
-                    update-in [:riddles-done] conj (:spider-id screen))
-      )
-    )
-                  
+      (-> entities
+          (update-by-id :player
+                        update-in [:riddles-done] conj (:spider-id screen))
+          (update-by-id (:spider-id screen)
+                        assoc :chasing? true))))
+
   :on-key-down
   (fn [screen entities]
     (when (= :main @current-screen-k)

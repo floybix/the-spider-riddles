@@ -1,14 +1,5 @@
 (load-game-file "utils.clj")
 
-(defn create-entity
-  [img]
-  (assoc img
-         :width 2
-         :height 2
-         :x-velocity 0
-         :y-velocity 0
-         ))
-
 (defn rectangle-from-object-layer
   [screen obj-name]
   (let [obj (-> (map-layer screen "entities")
@@ -31,7 +22,7 @@
                  (.getTextureRegion)
                  (texture))
         rect (.getRectangle obj)]
-    (assoc (create-entity img)
+    (assoc img
            :id (keyword obj-name)
            :x (/ (.x rect) pixels-per-tile)
            :y (/ (.y rect) pixels-per-tile)
@@ -45,9 +36,13 @@
         stand-flip (texture stand-left :flip true false)
         walk-flip (texture walk-left :flip true false)
         ]
-    (assoc (create-entity down)
+    (assoc down
            :character? true
            :walk-layers walk-layers
+           :width 2
+           :height 2
+           :x-velocity 0
+           :y-velocity 0
            :direction :down
            :down (animation duration [down down-flip])
            :up (animation duration [up up-flip])
@@ -103,13 +98,11 @@
 
 (defn move
   [screen entity]
-  (let [[x-velocity y-velocity] (if (:player? entity)
-                                  (get-player-velocity entity)
-                                  [(:x-velocity entity 0)
-                                   (:y-velocity entity 0)])
+  (let [[x-velocity y-velocity] [(:x-velocity entity 0)
+                                 (:y-velocity entity 0)]
         x-change (* x-velocity (:delta-time screen))
         y-change (* y-velocity (:delta-time screen))]
-    (if (or (not= 0 x-change) (not= 0 y-change))
+    (if (or (not (zero? x-change)) (not (zero? y-change)))
       (assoc entity
              :x-velocity (decelerate x-velocity)
              :y-velocity (decelerate y-velocity)
@@ -136,8 +129,7 @@
     (:floating? entity)
     (merge entity (:float entity))
     (:shark? entity)
-    (let [angle (Math/atan2 (:x-change entity) (:y-change entity))]
-      (assoc entity :angle angle))
+    (assoc entity :angle (+ -90 (* 90 (/ (:x-velocity entity) max-velocity))))
     :else
     (if-let [direction (get-direction entity)]
       (if-let [anim (get entity direction)]
@@ -198,23 +190,30 @@
 
 (defn prevent-move
   [screen entities entity]
-  (if-not (:character? entity)
+  (if (or (not (:character? entity))
+          (and (zero? (:x-change entity 0))
+               (zero? (:y-change entity 0))))
     entity
-    (if (or (= (:health entity) 0)
-          (< (:x entity) 0)
-          (> (:x entity) (- map-width 1))
-          (< (:y entity) 0)
-          (> (:y entity) (- map-height 1))
-          (not (some #(on-layer-ok? screen entity %)
-                     (:walk-layers entity))))
-    (assoc entity
-           :x-velocity 0
-           :y-velocity 0
-           :x-change 0
-           :y-change 0
-           :x (- (:x entity) (:x-change entity))
-           :y (- (:y entity) (:y-change entity)))
-    entity)))
+    (let [xy-ok (->> (map #(on-layer-xy-ok screen entity %)
+                          (:walk-layers entity))
+                     (reduce into #{}))]
+      (cond->
+       entity
+       (or (not (:y xy-ok))
+           (< (:y entity) 0)
+           (> (:y entity) (- map-height 1)))
+       (assoc
+         :y-velocity 0
+         :y-change 0
+         :y (- (:y entity) (:y-change entity)))
+       (or (not (:x xy-ok))
+           (< (:x entity) 0)
+           (> (:x entity) (- map-width 1)))
+       (assoc
+         :x-velocity 0
+         :x-change 0
+         :x (- (:x entity) (:x-change entity)))
+       ))))
 
 (defn adjust-times
   [screen entity]

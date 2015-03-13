@@ -11,11 +11,11 @@
 (def aggro-distance 6)
 (def attack-distance 1.5)
 
-(def hard-layers #{"pits" })
-;; note: other layers are soft
-
 (def player-layers #{"path" "bridges" "lava"})
 (def float-layers #{"Shark pool" "lake of terror"})
+
+(def hard-layers #{"pits" "Shark pool" "lake of terror"})
+;; note: other layers are soft
 
 (def jump-add-seq (concat (repeat 30 0.05) (repeat 30 -0.05)))
 
@@ -29,32 +29,41 @@
            (tiled-map-cell layer tile-x tile-y))
          (some boolean))))
  
-(defn all-on-layer?
-  [screen entity layer-name]
-  (let [layer (tiled-map-layer screen layer-name)]
-    (->> (for [tile-x (range (int (:x entity))
-                             (+ (:x entity) (:width entity)))
-               tile-y (range (int (:y entity))
-                             (+ (:y entity) (:height entity)))]
-           (tiled-map-cell layer tile-x tile-y))
-         (every? boolean))))
-
-(defn centre-on-layer?
+(defn central-points-on-layer
+  "Returns booleans in sequence: ([-x -y] [-x +y] [+x -y] [+x +y])."
   [screen entity layer-name pad]
   (let [layer (tiled-map-layer screen layer-name)
         mid-x (+ (:x entity) (/ (:width entity) 2))
         mid-y (+ (:y entity) (/ (:height entity) 2))]
-    (->> (for [off-x [(- pad) pad]
-               off-y [(- pad) pad]]
-           (tiled-map-cell layer (int (+ mid-x off-x))
-                                 (int (+ mid-y off-y))))
-         (every? boolean))))
+    (for [off-x [(- pad) pad]
+          off-y [(- pad) pad]]
+      (tiled-map-cell layer (int (+ mid-x off-x))
+                      (int (+ mid-y off-y))))))
+
+(defn test-points-on-layer
+  [screen entity layer-name]
+  (if (hard-layers layer-name)
+    (central-points-on-layer screen entity layer-name 1.0)
+    (central-points-on-layer screen entity layer-name 0.5)))
 
 (defn on-layer-ok?
   [screen entity layer-name]
-  (if (hard-layers layer-name)
-    (centre-on-layer? screen entity layer-name 1.0)
-    (centre-on-layer? screen entity layer-name 0.5)))
+  (every? boolean (test-points-on-layer screen entity layer-name)))
+
+(defn on-layer-xy-ok
+  "Returns which dimensions are ok: [:x] [:y] [:x :y] or []."
+  [screen entity layer-name]
+  (let [checks (test-points-on-layer screen entity layer-name)]
+    (case (mapv boolean checks)
+      ;; sw nw se ne
+      [true true false false] [:y]
+      [false false true true] [:y]
+      [true false true false] [:x]
+      [false true false true] [:x]
+      ;; if only one corner is off, let it pass. wait for the full edge.
+      (if (>= (count (filter boolean checks)) 3)
+        [:x :y]
+        []))))
 
 (defn near-entity?
   [e e2 min-distance]
@@ -66,6 +75,33 @@
 (defn near-entities?
   [entities entity min-distance]
   (some #(near-entity? entity % min-distance) entities))
+
+(defn go-round-and-round
+  [entity]
+  (let [[fx fy] (:focus-point entity)
+        x (:x entity)
+        y (:y entity)]
+    (if (and (zero? (:x-velocity entity))
+             (zero? (:y-velocity entity)))
+      ;; stuck
+      (assoc entity
+        :x-velocity (- fx x)
+        :y-velocity (- fy y))
+      ;; ok
+      (assoc entity
+        :x-velocity (* (- y fy) -1)
+        :y-velocity (- x fx)
+       ))))
+
+(defn chase
+  [entity player]
+  (assoc entity
+    :x-velocity (-> (- (:x player) (:x entity))
+                    (min max-velocity)
+                    (max (- max-velocity)))
+    :y-velocity (-> (- (:y player) (:y entity))
+                    (min max-velocity)
+                    (max (- max-velocity)))))
 
 (defn decelerate
   [velocity]
@@ -88,16 +124,16 @@
          :right (> (game :x) (* (game :width) 0.6))
          false)))
 
-(defn get-player-velocity
+(defn get-player-velocities
   [entity]
-  [(cond
-     (or (key-pressed? :dpad-left) (touched? :left)) (* -1 max-velocity)
-     (or (key-pressed? :dpad-right) (touched? :right)) max-velocity
-     :else (:x-velocity entity))
-   (cond
-     (or (key-pressed? :dpad-down) (touched? :down)) (* -1 max-velocity)
-     (or (key-pressed? :dpad-up) (touched? :up)) max-velocity
-     :else (:y-velocity entity))])
+  {:x-velocity (cond
+                (or (key-pressed? :dpad-left) (touched? :left)) (* -1 max-velocity)
+                (or (key-pressed? :dpad-right) (touched? :right)) max-velocity
+                :else (:x-velocity entity))
+   :y-velocity (cond
+                (or (key-pressed? :dpad-down) (touched? :down)) (* -1 max-velocity)
+                (or (key-pressed? :dpad-up) (touched? :up)) max-velocity
+                :else (:y-velocity entity))})
 
 (defn get-npc-axis-velocity
   [diff]
@@ -133,8 +169,8 @@
 (defn get-direction
   [entity]
   (cond
-    (not= (:y-velocity entity) 0) (if (> (:y-velocity entity) 0) :up :down)
-    (not= (:x-velocity entity) 0) (if (> (:x-velocity entity) 0) :right :left)
+    (not= (:y-velocity entity 0) 0) (if (> (:y-velocity entity) 0) :up :down)
+    (not= (:x-velocity entity 0) 0) (if (> (:x-velocity entity) 0) :right :left)
     :else nil))
 
 (defn x-centered
