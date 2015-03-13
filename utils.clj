@@ -147,6 +147,13 @@
   [id entities]
   (find-first #(= id (:id %)) entities))
 
+(defn update-by-id
+  [entities id f & args]
+  (for [e entities]
+    (if (= id (:id e))
+      (apply f e args)
+      e)))
+
 (defn play-sounds!
   [entities]
   (doseq [{:keys [play-sound]} entities]

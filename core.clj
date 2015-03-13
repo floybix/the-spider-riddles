@@ -145,28 +145,25 @@
         :sword (if (and (not (:in-pits? player))
                         (on-layer-ok? screen player "bridges"))
                  (do (narrate "You slash the rope bridge and tumble into the pit below.")
-                   (->> (assoc player
-                               :walk-layers #{"pits"}
-                               :in-pits? true)
-                     (conj (remove :player? entities))))
+                     (update-by-id entities :player
+                                   assoc :walk-layers #{"pits"}
+                                   :in-pits? true))
                    (do (narrate "You slash something unnecessarily and look around foolishly.")
                      nil))
         :rope (if (and (:in-pits? player)
                        (on-layer-ok? screen player "bridges"))
                 (do (narrate "Ah, this rope is so useful!!!")
-                  (->> (assoc player
-                              :walk-layers player-layers
-                              :in-pits? nil)
-                    (conj (remove :player? entities))))
+                    (update-by-id entities :player
+                                  assoc :walk-layers player-layers
+                                  :in-pits? nil))
                 (do (narrate "Oops, not there!!!")
                   nil))
         :floaty (if (and (some #(touching-layer? screen player %) float-layers)
                          (not (:floating? player)))
                   (do (narrate "keep up the floating!!!")
-                    (->> (assoc player
-                               :walk-layers (into (:walk-layers player) float-layers)
-                               :floating? true)
-                     (conj (remove :player? entities))))
+                      (update-by-id entities :player
+                                    assoc :walk-layers (into (:walk-layers player) float-layers)
+                                    :floating? true))
                   (do (narrate "Don't have time to play with toys now!!!")
                     nil
                     ))
@@ -189,8 +186,8 @@
         2 (narrate "")
         3 (narrate "")
         )
-      (->> (update-in player [:riddles-done] conj (:spider-id screen))
-           (conj (remove :player entities)))
+      (update-by-id entities :player
+                    update-in [:riddles-done] conj (:spider-id screen))
       )
     ;; TODO key
     )
@@ -199,8 +196,9 @@
   (fn [screen entities]
     (when-let [player (find-by-id :player entities)]
       (narrate "This is bad...")
-      (->> (update-in player [:riddles-done] conj (:spider-id screen))
-           (conj (remove :player entities))))
+      (update-by-id entities :player
+                    update-in [:riddles-done] conj (:spider-id screen))
+      )
     )
                   
   :on-key-down
@@ -208,8 +206,7 @@
     (when (= :main @current-screen-k)
       (when-let [player (find-by-id :player entities)]
         (if  (= (:key screen) (key-code :space))
-          (->> (try-jump player)
-               (conj (remove :player? entities)))
+          (update-by-id entities :player try-jump)
           ))))
   
   :on-touch-down
@@ -222,9 +219,7 @@
               height (game :height)]
           (if (and (< (* width 0.45) x (* width 0.55))
                    (< (* height 0.45) y (* width 0.55)))
-            (->>
-             (try-jump player)
-             (conj (remove :player? entities)))
+            (update-by-id entities :player try-jump)
             )))))
   )
 
@@ -304,12 +299,10 @@
   
   :on-narration
   (fn [screen entities]
-    (for [e entities]
-      (if (= :narration (:id e))
-        (do
-          (label! e :set-text (:say screen))
-          (assoc e :x (width screen) :counter 0))
-        e)))
+    (update-by-id entities :narration
+                  (fn [e]
+                    (label! e :set-text (:say screen))
+                    (assoc e :x (width screen) :counter 0))))
   
   :on-render
   (fn [screen entities]
