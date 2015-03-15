@@ -60,8 +60,7 @@
       [false false true true] [:y]
       [true false true false] [:x]
       [false true false true] [:x]
-      ;; if only one corner is off, let it pass. wait for the full edge.
-      (if (>= (count (filter boolean checks)) 3)
+      (if (every? boolean checks)
         [:x :y]
         []))))
 

@@ -23,24 +23,33 @@
   [player attack]
   (if (:on-fire? player)
     player
-    (do
-      (narrate "Hi.")
+    (let [health (- (:health player) 10)]
+      (narrate "I'M BURNING!!!!")
       (particle-effect! attack :start)
-      (assoc player :on-fire? true))))
+      (screen! status-screen :on-update-health :health health)
+      (assoc player :on-fire? true
+             :health health))))
 
 (defn shark-bite
   [player attack]
   (if (:bleeding? player)
     player
-    (do
+    (let [health (- (:health player) 10)]
       (narrate "HELP!!!!!!")
       (particle-effect! attack :start)
-      (assoc player :bleeding? true))))
+      (screen! status-screen :on-update-health :health health)
+      (assoc player :bleeding? true
+             :health health))))
 
 (defn poisoning
   [player attack]
-  player
-  )
+  (if (:poisoning? player)
+    player
+    (let [health (- (:health player) 10)]
+      (narrate "Wait a second... is this poison...? It is!")
+      (screen! status-screen :on-update-health :health health)
+      (assoc player :poisoning? true
+             :health health))))
 
 (defn interact
   [entities]
@@ -51,7 +60,8 @@
                ;; something we can touch?
                (if (or (:player? e)
                        (not (near-entity? player e 1))
-                       (not= (:in-pits? e) (:in-pits? player)))
+                       (and (not (:attack? e))
+                            (not= (:in-pits? e) (:in-pits? player))))
                  entities
                  ;; can touch
                  (cond
@@ -77,7 +87,9 @@
                        entities))
                   ;; meet sharks
                   (:shark? e)
-                  (update-by-id entities :player shark-bite (find-by-id :blood entities))
+                  (-> entities
+                    (update-by-id :player shark-bite (find-by-id :blood entities))
+                    (update-by-id (:id e) assoc :biting? true))
                   ;; meet poison
                   (= :poison (:id e))
                   (update-by-id entities :player poisoning (find-by-id :poison entities))
@@ -113,7 +125,8 @@
            (assoc :bleeding? false)
            ;; if touching lava
            (and (not (:jumping? entity))
-                (on-layer-ok? screen entity "lava"))
+                (on-layer-ok? screen entity "lava")
+                (not (on-layer-ok? screen entity "stepping")))
            (burn (find-by-id :burn entities))
            )
    ;; spiders
@@ -128,25 +141,32 @@
     entity)
    ;; pool shark
    (= :pool-shark (:id entity))
-   (cond
-    (let [player (find-by-id :player entities)]
-      (and (touching-layer? screen player "Shark pool")
-           (:floating? player)
-           (not (:invisible? player))))
-    (chase entity (find-by-id :player entities))
-    ;; go round in circles
-    :else
-    (go-round-and-round entity))
+   (let [player (find-by-id :player entities)]
+     (cond
+       (and (:biting? entity)
+            (not (:bleeding? player)))
+       (assoc entity :biting? false)
+       (and (touching-layer? screen player "Shark pool")
+              (:floating? player)
+              (not (:invisible? player)))
+       (chase entity player)
+       ;; otherwise - go round in circles
+       :else
+       (go-round-and-round entity)))
    ;; lake sharks
    (:shark? entity)
-   (cond
-    true
-    (chase entity (find-by-id :player entities)))
+   (let [player (find-by-id :player entities)]
+     (if (and (not (:jumping? player))
+              (on-layer-ok? screen entity "lake of terror")
+              (not (on-layer-ok? screen entity "lake stones")))
+       (chase entity player)
+       ;; otherwise - ?
+       entity))
    ;; volcanos
    (:volcano? entity)
    (doto entity
      (particle-effect! :update (graphics! :get-delta-time)))
-   ;; poison
+   ;; poison - not sticky
    (= :poison (:id entity))
    entity
    ;; sticky attacks
@@ -188,8 +208,14 @@
                                        "Put them together to make something hard to pick up.")
                           :answer "water")
                    (assoc (create-spider screen "spider-2")
-                          :riddle (str "Put riddle here.")
-                          :answer "foo")]
+                          :riddle (str "First, what do you say when you want quiet, "
+                                       "then what was build when the flood came; "
+                                       "these things I want to know, so tell me quick."
+                                       "Put them together and what do you get?")
+                          :answer "shark")
+                   (assoc (create-spider screen "spider-3")
+                          :riddle (str "" )
+                          :answer "black spider")]
           rope (assoc (create-entity-from-object-layer screen "rope")
                       :item? true
                       :in-pits? true)
@@ -246,9 +272,10 @@
                                                   :y-velocity (* 5.0 (- (:y player) (:y spider))))))))
       :poison-spit-done
       (for [e entities]
-        (if (:spider? e)
-          (assoc e :spitting? false)
-          e))
+        (cond
+          (:spider? e) (assoc e :spitting? false)
+          (:player? e) (assoc e :poisoning? false)
+          :else e))
       ))
   
   :on-render
@@ -397,6 +424,15 @@
               :y (- (height screen) 100)
               :height 50)]
     ))
+  
+  :on-update-health
+  (fn [screen entities]
+    (for [e entities]
+      (case (:id e)
+        :health-bar (assoc e :scale-y (/ (:health screen) 100))
+        :health-text (doto e (label! :set-text (str "health "
+                                                    (:health screen))))
+        e)))
   
   ;; when calling this, give :which-entity with the entity
   :on-pick-up-item
@@ -565,7 +601,8 @@
       (if (= (:actor screen) (:object (find-by-id :response-button entities)))
           (let [field (find-by-id :response-field entities)
                 wrote (-> (text-field! field :get-text)
-                        (clojure.string/lower-case))
+                        (clojure.string/lower-case)
+                        (clojure.string/trim))
                 spider (find-first :spider? entities)]
             (if (= wrote (:answer spider))
               (do

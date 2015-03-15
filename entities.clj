@@ -130,7 +130,11 @@
     (:floating? entity)
     (merge entity (:float entity))
     (:shark? entity)
-    (assoc entity :angle (+ -90 (* 90 (/ (:x-velocity entity) max-velocity))))
+    (if (:biting? entity)
+      (-> (merge entity (:attack entity))
+        (assoc :angle 0))
+      (-> (merge entity (:fin entity))
+        (assoc :angle (+ -90 (* 90 (/ (:x-velocity entity) max-velocity))))))
     :else
     (if-let [direction (get-direction entity)]
       (if-let [anim (get entity direction)]
