@@ -76,21 +76,23 @@
   [entities entity min-distance]
   (some #(near-entity? entity % min-distance) entities))
 
+(defn abs [x] (if (neg? x) (- x) x))
+
 (defn go-round-and-round
   [entity]
   (let [[fx fy] (:focus-point entity)
         x (:x entity)
         y (:y entity)]
-    (if (and (zero? (:x-velocity entity))
-             (zero? (:y-velocity entity)))
+    (if (or (> (abs (- fx x)) 4)
+            (> (abs (- fy y)) 4))
       ;; stuck
       (assoc entity
         :x-velocity (- fx x)
         :y-velocity (- fy y))
       ;; ok
       (assoc entity
-        :x-velocity 0
-        :y-velocity 0
+        :x-velocity (- y fy)
+        :y-velocity (- fx x)
        ))))
 
 (defn chase

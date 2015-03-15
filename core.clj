@@ -24,8 +24,23 @@
   (if (:on-fire? player)
     player
     (do
+      (narrate "Hi.")
       (particle-effect! attack :start)
       (assoc player :on-fire? true))))
+
+(defn shark-bite
+  [player attack]
+  (if (:bleeding? player)
+    player
+    (do
+      (narrate "HELP!!!!!!")
+      (particle-effect! attack :start)
+      (assoc player :bleeding? true))))
+
+(defn poisoning
+  [player attack]
+  player
+  )
 
 (defn interact
   [entities]
@@ -62,16 +77,17 @@
                        entities))
                   ;; meet sharks
                   (:shark? e)
-                  (do
-                    ;; attack
-                    entities)
+                  (update-by-id entities :player shark-bite (find-by-id :blood entities))
+                  ;; meet poison
+                  (= :poison (:id e))
+                  (update-by-id entities :player poisoning (find-by-id :poison entities))
                   ;; meet volcanos
                   (:volcano? e)
                   (if (particle-effect! e :is-complete)
-                    ;; not currently erupting
+                    ;; not currently erupting, pass through
                     entities
                     ;; hit by eruption
-                    (update-by-id :player burn (find-by-id :burn entities)))
+                    (update-by-id entities :player burn (find-by-id :burn entities)))
                   ;; all others
                   :else
                   entities)))
@@ -91,6 +107,10 @@
            (and (:on-fire? entity)
                 (particle-effect! (find-by-id :burn entities) :is-complete))
            (assoc :on-fire? false)
+           ;; if not bleeding any more
+           (and (:bleeding? entity)
+                (particle-effect! (find-by-id :blood entities) :is-complete))
+           (assoc :bleeding? false)
            ;; if touching lava
            (and (not (:jumping? entity))
                 (on-layer-ok? screen entity "lava"))
@@ -100,7 +120,10 @@
    (:spider? entity)
    (cond
     (:chasing? entity)
-    (chase entity (find-by-id :player entities))
+    (do
+      (when (particle-effect! (find-by-id :poison entities) :is-complete)
+        (add-timer! screen :poison-spit 1))
+      (chase entity (find-by-id :player entities)))
     :else
     entity)
    ;; pool shark
@@ -108,6 +131,7 @@
    (cond
     (let [player (find-by-id :player entities)]
       (and (touching-layer? screen player "Shark pool")
+           (:floating? player)
            (not (:invisible? player))))
     (chase entity (find-by-id :player entities))
     ;; go round in circles
@@ -142,7 +166,7 @@
 (defn try-jump
   [player]
   (if (:in-pits? player)
-    (narrate "qqqqqqqq"))
+    (narrate "Bbbbaaaadddd!!!"))
   (start-jump player))
 
 (defscreen main-screen
@@ -183,6 +207,12 @@
           attacks [(assoc (particle-effect "burn.p" :scale-effect 0.02)
                      :id :burn
                      :attack? true)
+                   (assoc (particle-effect "blood.p" :scale-effect 0.01)
+                     :id :blood
+                     :attack? true)
+                   (assoc (particle-effect "poison.p" :scale-effect 0.02)
+                     :id :poison
+                     :attack? true)
                    ]
           ]
       (add-timer! screen :eruption-1 5 5)
@@ -199,6 +229,15 @@
                                 #(doto % (particle-effect! :start)))
       :eruption-2 (update-by-id entities :volcano-2
                                 #(doto % (particle-effect! :start)))
+      :poison-spit
+      (when-let [spider (find-first #(and (:spider %) (:chasing? %)) entities)]
+        (let [player (find-by-id :player entities)]
+          (update-by-id entities :poison (fn [e]
+                                           (particle-effect! e :start)
+                                           (assoc e :x (:x spider)
+                                                  :y (:y spider)
+                                                  :x-velocity (* 1.0 (- (:x player) (:x spider)))
+                                                  :y-velocity (* 1.0 (- (:y player) (:y spider))))))))
       ))
   
   :on-render
@@ -266,9 +305,9 @@
     (when-let [player (find-by-id :player entities)]
       (case (count (:riddles-done player))
         0 (narrate "Your first triumph has come!")
-        1 (narrate "")
-        2 (narrate "")
-        3 (narrate "")
+        1 (narrate "Two's the one!")
+        2 (narrate "tut tut! 3333!")
+        3 (narrate "You've done it!!!")
         )
       (update-by-id entities :player
                     (fn [e]
@@ -282,7 +321,7 @@
   :on-give-up-riddle
   (fn [screen entities]
     (when-let [player (find-by-id :player entities)]
-      (narrate "This is bad...")
+      (narrate "This is bad...Ahhhhhhhh!!!!!!!")
       (-> entities
           (update-by-id :player
                         update-in [:riddles-done] conj (:spider-id screen))
@@ -529,7 +568,7 @@
               ))
           ;; gave up
           (do
-            (spider-say! entities "qqqqqqqqqqqqq")
+            (spider-say! entities "You... I want you...!")
             (add-timer! screen :give-up 2)
             entities)
           )))
