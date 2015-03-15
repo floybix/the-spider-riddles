@@ -119,11 +119,11 @@
    ;; spiders
    (:spider? entity)
    (cond
-    (:chasing? entity)
-    (do
-      (when (particle-effect! (find-by-id :poison entities) :is-complete)
-        (add-timer! screen :poison-spit 1))
-      (chase entity (find-by-id :player entities)))
+    (and (:chasing? entity) (not (:spitting? entity)))
+    (do (add-timer! screen :poison-spit 0.1)
+      (assoc entity :spitting? true))
+    (:chasing entity)
+    (chase entity (find-by-id :player entities))
     :else
     entity)
    ;; pool shark
@@ -146,7 +146,10 @@
    (:volcano? entity)
    (doto entity
      (particle-effect! :update (graphics! :get-delta-time)))
-   ;; attacks
+   ;; poison
+   (= :poison (:id entity))
+   entity
+   ;; sticky attacks
    (:attack? entity)
    (let [player (find-by-id :player entities)]
      (particle-effect! entity :update (graphics! :get-delta-time))
@@ -159,8 +162,7 @@
   (render-map-fixed! screen :without "bridges")
   (draw! screen (filter :in-pits? entities))
   (render-map-fixed! screen :with "bridges")
-  (draw! screen (->> (remove :in-pits? entities)
-                  (map (fn [e] (if (particle-effect? e) (x-centered e) e)))))
+  (draw! screen (remove :in-pits? entities))
   entities)
 
 (defn try-jump
@@ -206,13 +208,16 @@
                  ]
           attacks [(assoc (particle-effect "burn.p" :scale-effect 0.02)
                      :id :burn
-                     :attack? true)
+                     :attack? true
+                     :x 0 :y 0)
                    (assoc (particle-effect "blood.p" :scale-effect 0.01)
                      :id :blood
-                     :attack? true)
+                     :attack? true
+                     :x 0 :y 0)
                    (assoc (particle-effect "poison.p" :scale-effect 0.02)
                      :id :poison
-                     :attack? true)
+                     :attack? true
+                     :x 0 :y 0)
                    ]
           ]
       (add-timer! screen :eruption-1 5 5)
@@ -230,14 +235,20 @@
       :eruption-2 (update-by-id entities :volcano-2
                                 #(doto % (particle-effect! :start)))
       :poison-spit
-      (when-let [spider (find-first #(and (:spider %) (:chasing? %)) entities)]
+      (when-let [spider (find-first #(and (:spider? %) (:spitting? %)) entities)]
         (let [player (find-by-id :player entities)]
+          (add-timer! screen :poison-spit-done 4)
           (update-by-id entities :poison (fn [e]
                                            (particle-effect! e :start)
                                            (assoc e :x (:x spider)
                                                   :y (:y spider)
-                                                  :x-velocity (* 1.0 (- (:x player) (:x spider)))
-                                                  :y-velocity (* 1.0 (- (:y player) (:y spider))))))))
+                                                  :x-velocity (* 5.0 (- (:x player) (:x spider)))
+                                                  :y-velocity (* 5.0 (- (:y player) (:y spider))))))))
+      :poison-spit-done
+      (for [e entities]
+        (if (:spider? e)
+          (assoc e :spitting? false)
+          e))
       ))
   
   :on-render

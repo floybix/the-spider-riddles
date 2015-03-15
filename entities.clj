@@ -148,47 +148,6 @@
          :jumping? true
          :jump-seq jump-add-seq)))
 
-(defn not-victim?
-  [attacker victim]
-  (or (= (:health attacker) 0)
-      (not= (:npc? attacker) (:player? victim))
-      (not (near-entity? attacker victim attack-distance))
-      (case (:direction attacker)
-        :down (< (- (:y attacker) (:y victim)) 0) ; victim is up?
-        :up (> (- (:y attacker) (:y victim)) 0) ; victim is down?
-        :right (> (- (:x attacker) (:x victim)) 0) ; victim is left?
-        :left (< (- (:x attacker) (:x victim)) 0) ; victim is right?
-        false)))
-
-(defn attack
-  [entities attacker]
-  (let [victim (first (drop-while #(not-victim? attacker %) entities))]
-    (map (fn [e]
-           (if (= e victim)
-             (let [health (max 0 (- (:health e) (:damage attacker)))]
-               (assoc e
-                      :play-sound (if (and (= health 0) (:death-sound victim))
-                                    (:death-sound victim)
-                                    (:hurt-sound victim))
-                      :health health))
-             e))
-         entities)))
-
-(defn npc-attacker?
-  [entity player]
-  (and player
-       (:npc? entity)
-       (> (:health entity) 0)
-       (= (:attack-time entity) 0)
-       (near-entity? entity player attack-distance)))
-
-(defn attack-player
-  [entities]
-  (if-let [npc (find-first #(npc-attacker? % (find-first :player? entities))
-                           entities)]
-    (attack entities npc)
-    entities))
-
 (defn prevent-move
   [screen entities entity]
   (if (or (not (:character? entity))
@@ -215,15 +174,3 @@
          :x-change 0
          :x (- (:x entity) (:x-change entity)))
        ))))
-
-(defn adjust-times
-  [screen entity]
-  (if-not (:character? entity)
-    entity
-    (if-let [attack-time (:attack-time entity)]
-      (assoc entity
-           :attack-time
-           (if (> attack-time 0)
-             (max 0 (- attack-time (:delta-time screen)))
-             max-attack-time))
-    entity)))

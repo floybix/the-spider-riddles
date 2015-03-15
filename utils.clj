@@ -68,7 +68,6 @@
 (defn near-entity?
   [e e2 min-distance]
   (and (not= (:id e) (:id e2))
-       (nil? (:draw-time e2))
        (< (Math/abs ^double (- (:x e) (:x e2))) min-distance)
        (< (Math/abs ^double (- (:y e) (:y e2))) min-distance)))
 
