@@ -9,6 +9,7 @@
    <terrain name="Lava" tile="304"/>
    <terrain name="pits" tile="121"/>
    <terrain name="Walls" tile="853"/>
+   <terrain name="Hedge" tile="737"/>
   </terraintypes>
   <tile id="0" terrain=",,,2"/>
   <tile id="1" terrain=",,2,2"/>
@@ -82,17 +83,33 @@
   <tile id="425" terrain=",1,,"/>
   <tile id="426" terrain="1,1,,"/>
   <tile id="427" terrain="1,,,"/>
-  <tile id="824" terrain="5,5,,"/>
-  <tile id="825" terrain="5,5,,"/>
+  <tile id="641" terrain="6,6,6,"/>
+  <tile id="642" terrain="6,6,,6"/>
+  <tile id="673" terrain="6,,6,6"/>
+  <tile id="674" terrain=",6,6,6"/>
+  <tile id="704" terrain=",,,6"/>
+  <tile id="705" terrain=",,6,6"/>
+  <tile id="706" terrain=",,6,"/>
+  <tile id="736" terrain=",6,,6"/>
+  <tile id="737" terrain="6,6,6,6"/>
+  <tile id="738" terrain="6,,6,"/>
+  <tile id="768" terrain=",6,,"/>
+  <tile id="769" terrain="6,6,,"/>
+  <tile id="770" terrain="6,,,"/>
+  <tile id="824" terrain="5,,,"/>
+  <tile id="825" terrain=",5,,"/>
   <tile id="852" terrain=",5,5,5"/>
-  <tile id="853" terrain="5,5,5,5"/>
   <tile id="854" terrain="5,,5,5"/>
-  <tile id="857" terrain=",,5,5"/>
-  <tile id="858" terrain=",,5,5"/>
+  <tile id="855" terrain=",,5,5"/>
+  <tile id="856" terrain=",,5,5"/>
+  <tile id="857" terrain=",,5,"/>
+  <tile id="858" terrain=",,,5"/>
   <tile id="887" terrain="5,,5,"/>
   <tile id="888" terrain=",5,,5"/>
   <tile id="916" terrain="5,5,,5"/>
   <tile id="918" terrain="5,5,5,"/>
+  <tile id="919" terrain="5,5,,"/>
+  <tile id="920" terrain="5,5,,"/>
  </tileset>
  <tileset firstgid="1025" name="base_out_atlas" tilewidth="32" tileheight="32">
   <image source="base_out_atlas.png" width="1024" height="1024"/>
@@ -178,7 +195,7 @@
  </layer>
  <layer name="details" width="90" height="70">
   <data encoding="base64" compression="zlib">
-   eJzt1T0OgjAYgOGmEx6Yq4mCykEQvIofQxejiUtjhOdJuvQnTd6hTQkAAAAAAAAAgC045pS6/H7tFPPnGP3LepkbYlw+nN2SQ/Pb+6dofN9B51raL9tdY99N5+rmaLzoXFV510edq1v/wofOAAAAAAAAAAAAAAAAAMCfeQLhbQ/l
+   eJzt2E1ugkAABtAJbvROeizv01P4W9ulega1XfYaHRaTJgZTUBCQ9xJCAiRMvpCPmQkBAABgeFZZ2yOAxy3id7zMfM8AQDnTUQizUdujeF3rqznZJgtv+TnlLn8A4FnSnlGRfB8pn7dsru6na9t4vA9gr2kybvf9p5jxeQA5N2VeMrtdfO6jQzkfb6wHDj1fJ1xixl8dyvkVpV7/lHPj8n/hdwdz/qnQE/ued0ob+t7DUCT1hk6o33+ZFt2/NQ+kmqJsdXizqsxBoAvu6QQdDQDUzVq8HmVztC4EAAAAAAAAAIA/v1fQJP0=
   </data>
  </layer>
  <objectgroup name="entities">

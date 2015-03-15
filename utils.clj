@@ -135,37 +135,6 @@
                 (or (key-pressed? :dpad-up) (touched? :up)) max-velocity
                 :else (:y-velocity entity))})
 
-(defn get-npc-axis-velocity
-  [diff]
-  (cond
-    (> diff attack-distance) (* -1 max-velocity-npc)
-    (< diff (* -1 attack-distance)) max-velocity-npc
-    :else 0))
-
-(defn get-npc-aggro-velocity
-  [npc player]
-  (let [x-diff (- (:x npc) (:x player))
-        y-diff (- (:y npc) (:y player))]
-    [(get-npc-axis-velocity x-diff)
-     (get-npc-axis-velocity y-diff)]))
-
-(defn get-npc-velocity
-  [entities entity]
-  (let [player (find-first :player? entities)]
-    (if (and player (near-entity? entity player aggro-distance))
-      (get-npc-aggro-velocity entity player)
-      (if (= (:attack-time entity) 0)
-        [(* max-velocity-npc (- (rand-int 3) 1))
-         (* max-velocity-npc (- (rand-int 3) 1))]
-        [(:x-velocity entity) (:y-velocity entity)]))))
-
-(defn get-velocity
-  [entities entity]
-  (cond
-    (:player? entity) (get-player-velocity entity)
-    (:npc? entity) (get-npc-velocity entities entity)
-    :else [0 0]))
-
 (defn get-direction
   [entity]
   (cond

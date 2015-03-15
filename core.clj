@@ -19,6 +19,14 @@
     (position! screen (:x player) (:y player)))
   entities)
 
+(defn burn
+  [player attack]
+  (if (:on-fire? player)
+    player
+    (do
+      (particle-effect! attack :start)
+      (assoc player :on-fire? true))))
+
 (defn interact
   [entities]
   (when-let [player (find-by-id :player entities)]
@@ -59,8 +67,13 @@
                     entities)
                   ;; meet volcanos
                   (:volcano? e)
-                  entities
-                  :all-others
+                  (if (particle-effect! e :is-complete)
+                    ;; not currently erupting
+                    entities
+                    ;; hit by eruption
+                    (update-by-id :player burn (find-by-id :burn entities)))
+                  ;; all others
+                  :else
                   entities)))
              entities))))
 
@@ -73,7 +86,16 @@
            (and (:floating? entity)
                 (not (some #(touching-layer? screen entity %) float-layers)))
            (assoc :floating? false
-                  :walk-layers (apply disj (:walk-layers entity) float-layers)))
+                  :walk-layers (apply disj (:walk-layers entity) float-layers))
+           ;; if not on fire any more
+           (and (:on-fire? entity)
+                (particle-effect! (find-by-id :burn entities) :is-complete))
+           (assoc :on-fire? false)
+           ;; if touching lava
+           (and (not (:jumping? entity))
+                (on-layer-ok? screen entity "lava"))
+           (burn (find-by-id :burn entities))
+           )
    ;; spiders
    (:spider? entity)
    (cond
@@ -96,6 +118,15 @@
    (cond
     true
     (chase entity (find-by-id :player entities)))
+   ;; volcanos
+   (:volcano? entity)
+   (doto entity
+     (particle-effect! :update (graphics! :get-delta-time)))
+   ;; attacks
+   (:attack? entity)
+   (let [player (find-by-id :player entities)]
+     (particle-effect! entity :update (graphics! :get-delta-time))
+     (merge entity (select-keys player [:x :y :width :height])))
    :else
    entity))
 
@@ -146,29 +177,34 @@
                        :item? true)
           pool-shark (assoc (create-shark screen "pool-shark")
                        :focus-point [(:x lava-step) (:y lava-step)])
-          volcs [(create-volcano screen "volcano-1")
-                 (create-volcano screen "volcano-2")]
+          volcs [(create-volcano screen "volcano-1" "fire.p")
+                 (create-volcano screen "volcano-2" "fire2.p")
+                 ]
+          attacks [(assoc (particle-effect "burn.p" :scale-effect 0.02)
+                     :id :burn
+                     :attack? true)
+                   ]
           ]
-      (add-timer! screen :eruption 5 5)
+      (add-timer! screen :eruption-1 5 5)
+      (add-timer! screen :eruption-2 6 5)
       (concat [player rope sword floaty wand lava-step pool-shark]
               spiders
-              volcs)))
+              volcs
+              attacks)))
   
   :on-timer
   (fn [screen entities]
     (case (:id screen)
-      :eruption (doseq [e entities]
-                  (when (particle-effect? e)
-                    (particle-effect! e :start)))))
+      :eruption-1 (update-by-id entities :volcano-1
+                                #(doto % (particle-effect! :start)))
+      :eruption-2 (update-by-id entities :volcano-2
+                                #(doto % (particle-effect! :start)))
+      ))
   
   :on-render
   (fn [screen entities]
     (when (= :main @current-screen-k)
       (clear!)
-      (doseq [e entities]
-        (when (particle-effect? e)
-          (particle-effect! e :update (graphics! :get-delta-time))))
-      ;;
       (->> entities
         (map (fn [entity]
                (->> entity

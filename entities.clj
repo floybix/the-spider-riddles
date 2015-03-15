@@ -92,8 +92,8 @@
            :death-sound (sound "player_death.wav"))))
 
 (defn create-volcano
-  [screen obj-name]
-  (-> (merge (particle-effect "fire.p" :scale-effect 0.02)
+  [screen obj-name file-name]
+  (-> (merge (particle-effect file-name :scale-effect 0.02)
              (rectangle-from-object-layer screen obj-name))
       (assoc :volcano? true)))
 
