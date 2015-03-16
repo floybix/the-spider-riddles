@@ -179,9 +179,9 @@
 
 (defn render-with-overlaps
   [screen entities]
-  (render-map-fixed! screen :without "bridges")
+  (render-map! screen :without "bridges")
   (draw! screen (filter :in-pits? entities))
-  (render-map-fixed! screen :with "bridges")
+  (render-map! screen :with "bridges")
   (draw! screen (remove :in-pits? entities))
   entities)
 

@@ -166,24 +166,3 @@
       (sound! play-sound :play)))
   (map #(dissoc % :play-sound) entities))
 
-(defn render-map-fixed!
-  [{:keys [^com.badlogic.gdx.maps.tiled.renderers.BatchTiledMapRenderer renderer ^Camera camera] :as screen}
-   & [k & layer-names]]
-  (when camera (.setView renderer camera))
-  (if k
-    (let [all-layer-names (map-layer-names screen)]
-      ; make sure the layer names exist
-      (doseq [n layer-names]
-        (when-not (contains? (set all-layer-names) n)
-          (throw (Exception. (format "Layer \"%s\" does not exist." n)))))
-      ; render with or without the supplied layers
-      (->> (case k
-             :with (set layer-names)
-             :without (clojure.set/difference (set all-layer-names)
-                                              (set layer-names))
-             #_(u/throw-key-not-found k))
-           (map #(.indexOf ^java.util.List all-layer-names %))
-           (sort)
-           int-array
-           (.render renderer))))
-  nil)
