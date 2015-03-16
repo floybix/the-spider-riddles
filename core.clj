@@ -19,11 +19,18 @@
     (position! screen (:x player) (:y player)))
   entities)
 
+(defn check-health!
+  [health]
+  (when (<= health 0)
+    (screen! status-screen :on-game-over)
+    (screen! main-screen :on-game-over)))
+
 (defn burn
   [player attack]
   (if (:on-fire? player)
     player
     (let [health (- (:health player) 10)]
+      (check-health! health)
       (narrate "I'M BURNING!!!!")
       (particle-effect! attack :start)
       (screen! status-screen :on-update-health :health health)
@@ -35,6 +42,7 @@
   (if (:bleeding? player)
     player
     (let [health (- (:health player) 10)]
+      (check-health! health)
       (narrate "HELP!!!!!!")
       (particle-effect! attack :start)
       (screen! status-screen :on-update-health :health health)
@@ -46,6 +54,7 @@
   (if (:poisoning? player)
     player
     (let [health (- (:health player) 10)]
+      (check-health! health)
       (narrate "Wait a second... is this poison...? It is!")
       (screen! status-screen :on-update-health :health health)
       (assoc player :poisoning? true
@@ -109,33 +118,35 @@
   [screen entities entity]
   (cond
    (:player? entity)
-   (cond-> (merge entity (get-player-velocities entity))
-           ;; if not touching water any more
-           (and (:floating? entity)
-                (not (some #(touching-layer? screen entity %) float-layers)))
-           (assoc :floating? false
-                  :walk-layers (apply disj (:walk-layers entity) float-layers))
-           ;; if not on fire any more
-           (and (:on-fire? entity)
-                (particle-effect! (find-by-id :burn entities) :is-complete))
-           (assoc :on-fire? false)
-           ;; if not bleeding any more
-           (and (:bleeding? entity)
-                (particle-effect! (find-by-id :blood entities) :is-complete))
-           (assoc :bleeding? false)
-           ;; if touching lava
-           (and (not (:jumping? entity))
-                (on-layer-ok? screen entity "lava")
-                (not (touching-layer? screen entity "stepping")))
-           (burn (find-by-id :burn entities))
-           )
+   (if (:dead? entity)
+     entity
+     (cond-> (merge entity (get-player-velocities entity))
+            ;; if not touching water any more
+            (and (:floating? entity)
+                 (not (some #(touching-layer? screen entity %) float-layers)))
+            (assoc :floating? false
+                   :walk-layers (apply disj (:walk-layers entity) float-layers))
+            ;; if not on fire any more
+            (and (:on-fire? entity)
+                 (particle-effect! (find-by-id :burn entities) :is-complete))
+            (assoc :on-fire? false)
+            ;; if not bleeding any more
+            (and (:bleeding? entity)
+                 (particle-effect! (find-by-id :blood entities) :is-complete))
+            (assoc :bleeding? false)
+            ;; if touching lava
+            (and (not (:jumping? entity))
+                 (on-layer-ok? screen entity "lava")
+                 (not (touching-layer? screen entity "stepping")))
+            (burn (find-by-id :burn entities))
+            ))
    ;; spiders
    (:spider? entity)
    (cond
     (and (:chasing? entity) (not (:spitting? entity)))
     (do (add-timer! screen :poison-spit 0.1)
       (assoc entity :spitting? true))
-    (:chasing entity)
+    (:chasing? entity)
     (chase entity (find-by-id :player entities))
     :else
     entity)
@@ -380,11 +391,14 @@
         2 (narrate "tut tut! 3333!")
         3 (narrate "You've done it!!!")
         )
-      (update-by-id entities :player
-                    (fn [e]
-                      (-> e
-                          (update-in [:riddles-done] conj (:spider-id screen))
-                          (update-in [:keys-won] conj (:spider-id screen)))))
+      (let [health (max 100 (+ (:health player) 10))]
+        (screen! status-screen :on-update-health :health health)
+        (update-by-id entities :player
+                      (fn [e]
+                        (-> e
+                            (update-in [:riddles-done] conj (:spider-id screen))
+                            (update-in [:keys-won] conj (:spider-id screen))
+                            (assoc :health health)))))
       )
     ;; TODO key
     )
@@ -398,6 +412,10 @@
                         update-in [:riddles-done] conj (:spider-id screen))
           (update-by-id (:spider-id screen)
                         assoc :chasing? true))))
+
+  :on-game-over
+  (fn [screen entities]
+    (update-by-id entities :player assoc :color [0 0 0 0] :dead? true))
 
   :on-key-down
   (fn [screen entities]
@@ -511,6 +529,16 @@
                     (label! e :set-text (:say screen))
                     (assoc e :x (width screen) :counter 0))))
   
+  :on-game-over
+  (fn [screen entities]
+    (conj entities
+          (assoc (label (str "GAME" \newline "OVER") (color :white))
+            :id :game-over-text
+            :x (/ (width screen) 2)
+            :y (/ (height screen) 2)
+            :set-font-scale 10
+            :set-alignment (align :center))))
+
   :on-render
   (fn [screen entities]
     (->> (for [e entities]
