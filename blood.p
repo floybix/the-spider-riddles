@@ -2,16 +2,16 @@ Untitled
 - Delay -
 active: false
 - Duration - 
-lowMin: 3000.0
-lowMax: 3000.0
+lowMin: 2500.0
+lowMax: 2500.0
 - Count - 
 min: 0
-max: 100
+max: 80
 - Emission - 
 lowMin: 0.0
 lowMax: 0.0
-highMin: 250.0
-highMax: 250.0
+highMin: 40.0
+highMax: 40.0
 relative: false
 scalingCount: 1
 scaling0: 1.0
@@ -132,7 +132,7 @@ active: false
 active: false
 - Tint - 
 colorsCount: 3
-colors0: 0.4862745
+colors0: 0.7294118
 colors1: 0.0
 colors2: 0.0
 timelineCount: 1
@@ -152,7 +152,7 @@ timeline0: 0.0
 timeline1: 0.001
 timeline2: 1.0
 - Options - 
-attached: false
+attached: true
 continuous: false
 aligned: false
 additive: false

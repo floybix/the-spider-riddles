@@ -237,15 +237,15 @@
           attacks [(assoc (particle-effect "burn.p" :scale-effect 0.02)
                      :id :burn
                      :attack? true
-                     :x 0 :y 0)
+                     :x 0 :y 0 :width 1 :height 1)
                    (assoc (particle-effect "blood.p" :scale-effect 0.01)
                      :id :blood
                      :attack? true
-                     :x 0 :y 0)
+                     :x 0 :y 0 :width 1 :height 1)
                    (assoc (particle-effect "poison.p" :scale-effect 0.02)
                      :id :poison
                      :attack? true
-                     :x 0 :y 0)
+                     :x 0 :y 0 :width 1 :height 1)
                    ]
           ]
       (add-timer! screen :eruption-1 5 5)

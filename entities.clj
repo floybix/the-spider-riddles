@@ -158,9 +158,9 @@
           (and (zero? (:x-change entity 0))
                (zero? (:y-change entity 0))))
     entity
-    (let [xy-ok (->> (map #(on-layer-xy-ok screen entity %)
-                          (:walk-layers entity))
-                     (reduce into #{}))]
+    (let [xy-ok (->> (mapcat #(on-layer-xy-ok screen entity %)
+                             (:walk-layers entity))
+                     (into #{}))]
       (cond->
        entity
        (or (not (:y xy-ok))

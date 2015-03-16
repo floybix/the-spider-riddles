@@ -19,6 +19,8 @@
 
 (def jump-add-seq (concat (repeat 30 0.05) (repeat 30 -0.05)))
 
+(defn abs [x] (if (neg? x) (- x) x))
+
 (defn touching-layer?
   [screen entity layer-name]
   (let [layer (tiled-map-layer screen layer-name)]
@@ -67,14 +69,12 @@
 (defn near-entity?
   [e e2 min-distance]
   (and (not= (:id e) (:id e2))
-       (< (Math/abs ^double (- (:x e) (:x e2))) min-distance)
-       (< (Math/abs ^double (- (:y e) (:y e2))) min-distance)))
+       (< (abs (- (:x e) (:x e2))) min-distance)
+       (< (abs (- (:y e) (:y e2))) min-distance)))
 
 (defn near-entities?
   [entities entity min-distance]
   (some #(near-entity? entity % min-distance) entities))
-
-(defn abs [x] (if (neg? x) (- x) x))
 
 (defn go-round-and-round
   [entity]
