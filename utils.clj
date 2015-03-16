@@ -3,13 +3,9 @@
 (def duration 0.2)
 (def damping 0.5)
 (def max-velocity 6)
-(def max-velocity-npc 3)
 (def deceleration 0.9)
 (def map-width 90)
 (def map-height 70)
-(def max-attack-time 1)
-(def aggro-distance 6)
-(def attack-distance 1.5)
 
 (def player-layers #{"path" "bridges" "lava"})
 (def float-layers #{"Shark pool" "lake of terror"})
@@ -17,7 +13,7 @@
 (def hard-layers #{"pits" "Shark pool" "lake of terror"})
 ;; note: other layers are soft
 
-(def jump-add-seq (concat (repeat 30 0.05) (repeat 30 -0.05)))
+(def jump-add-seq (concat (repeat 20 0.06) (repeat 20 -0.06)))
 
 (defn abs [x] (if (neg? x) (- x) x))
 
@@ -81,8 +77,8 @@
   (let [[fx fy] (:focus-point entity)
         x (:x entity)
         y (:y entity)]
-    (if (or (> (abs (- fx x)) 4)
-            (> (abs (- fy y)) 4))
+    (if (or (> (abs (- fx x)) 3.5)
+            (> (abs (- fy y)) 3.5))
       ;; stuck
       (assoc entity
         :x-velocity (- fx x)

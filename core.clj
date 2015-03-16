@@ -126,7 +126,7 @@
            ;; if touching lava
            (and (not (:jumping? entity))
                 (on-layer-ok? screen entity "lava")
-                (not (on-layer-ok? screen entity "stepping")))
+                (not (touching-layer? screen entity "stepping")))
            (burn (find-by-id :burn entities))
            )
    ;; spiders
@@ -191,6 +191,29 @@
     (narrate "Bbbbaaaadddd!!!"))
   (start-jump player))
 
+(def lava-step-cells
+  (atom ()))
+
+(defn extract-lava-step-cells!
+  [screen]
+  (let [layer (tiled-map-layer screen "stepping")
+        place (rectangle-from-object-layer screen "lava-step-place")]
+    (->> (for [tile-x (range (int (:x place))
+                             (+ (:x place) (:width place)))
+               tile-y (range (int (:y place))
+                             (+ (:y place) (:height place)))]
+           (let [cell (tiled-map-cell layer tile-x tile-y)]
+             (tiled-map-layer! layer :set-cell tile-x tile-y nil)
+             [tile-x tile-y cell]))
+         (swap! lava-step-cells into))))
+
+(defn place-lava-step-cells!
+  [screen]
+  (let [layer (tiled-map-layer screen "stepping")]
+    (doseq [[tile-x tile-y cell] @lava-step-cells]
+      (tiled-map-layer! layer :set-cell tile-x tile-y cell))
+    (swap! lava-step-cells empty)))
+
 (defscreen main-screen
   :on-show
   (fn [screen _]
@@ -248,6 +271,7 @@
                      :x 0 :y 0 :width 1 :height 1)
                    ]
           ]
+      (extract-lava-step-cells! screen)
       (add-timer! screen :eruption-1 5 5)
       (add-timer! screen :eruption-2 6 5)
       (concat [player rope sword floaty wand lava-step pool-shark]
@@ -262,6 +286,8 @@
                                 #(doto % (particle-effect! :start)))
       :eruption-2 (update-by-id entities :volcano-2
                                 #(doto % (particle-effect! :start)))
+      :visible-again
+      (update-by-id entities :player assoc :invisible? false :color nil)
       :poison-spit
       (when-let [spider (find-first #(and (:spider? %) (:spitting? %)) entities)]
         (let [player (find-by-id :player entities)]
@@ -330,11 +356,16 @@
                   (do (narrate "Don't have time to play with toys now!!!")
                     nil
                     ))
-        :wand (do
-                (narrate "")
-                nil)
+        :wand (if (:invisible? player)
+                player
+                (do (narrate "")
+                    (add-timer! screen :visible-again 3.5)
+                    (update-by-id entities :player
+                                  assoc :invisible? true :color [0 0 0 0.5])))
         :lava-step (if (touching-layer? screen player "lava")
                      (do (narrate "Hop, skip and jump!!!")
+                         (place-lava-step-cells! screen)
+                         nil
                        )
                      (do (narrate "Be careful! Don't drop it on your foot!!!")
                        ))
@@ -406,9 +437,9 @@
               :id :health-text
               :x (- (width screen) 100) :y 10)
        (assoc (shape :filled
-                     :set-color (color :black)
+                     :set-color (color :white)
                      :rect 0 0 10 102
-                     :set-color (color :gray)
+                     :set-color (color :black)
                      :rect 1 1 8 100)
          :id :health-bar-bg
          :x (- (width screen) 20)
