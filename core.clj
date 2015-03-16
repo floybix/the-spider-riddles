@@ -29,7 +29,7 @@
   [player attack]
   (if (:on-fire? player)
     player
-    (let [health (- (:health player) 10)]
+    (let [health (max 0 (- (:health player) 10))]
       (check-health! health)
       (narrate "I'M BURNING!!!!")
       (particle-effect! attack :start)
@@ -41,7 +41,7 @@
   [player attack]
   (if (:bleeding? player)
     player
-    (let [health (- (:health player) 10)]
+    (let [health (max 0 (- (:health player) 10))]
       (check-health! health)
       (narrate "HELP!!!!!!")
       (particle-effect! attack :start)
@@ -53,7 +53,7 @@
   [player attack]
   (if (:poisoning? player)
     player
-    (let [health (- (:health player) 10)]
+    (let [health (max 0 (- (:health player) 10))]
       (check-health! health)
       (narrate "Wait a second... is this poison...? It is!")
       (screen! status-screen :on-update-health :health health)
@@ -150,29 +150,19 @@
     (chase entity (find-by-id :player entities))
     :else
     entity)
-   ;; pool shark
-   (= :pool-shark (:id entity))
+   ;; sharks
+   (:shark? entity)
    (let [player (find-by-id :player entities)]
      (cond
        (and (:biting? entity)
             (not (:bleeding? player)))
        (assoc entity :biting? false)
-       (and (touching-layer? screen player "Shark pool")
-              (:floating? player)
-              (not (:invisible? player)))
+       (and (:floating? player)
+            (not (:invisible? player)))
        (chase entity player)
        ;; otherwise - go round in circles
        :else
        (go-round-and-round entity)))
-   ;; lake sharks
-   (:shark? entity)
-   (let [player (find-by-id :player entities)]
-     (if (and (not (:jumping? player))
-              (on-layer-ok? screen entity "lake of terror")
-              (not (on-layer-ok? screen entity "lake stones")))
-       (chase entity player)
-       ;; otherwise - ?
-       entity))
    ;; volcanos
    (:volcano? entity)
    (doto entity
@@ -251,7 +241,10 @@
                           :riddle (str "Help me and my sisters find the thing we lost. " 
                                        "We think we've misplaced our \"padless brick\", "
                                        "but maybe it's just us.")
-                          :answer "black spiders")]
+                          :answer "black spiders")
+                   (assoc (create-spider screen "spider-4")
+                          :riddle (str "")
+                          :answer "")]
           rope (assoc (create-entity-from-object-layer screen "rope")
                       :item? true
                       :in-pits? true)
@@ -265,6 +258,13 @@
                        :item? true)
           pool-shark (assoc (create-shark screen "pool-shark")
                        :focus-point [(:x lava-step) (:y lava-step)])
+          sharks [(create-shark screen "shark-1")
+                  (create-shark screen "shark-2")
+                  (create-shark screen "shark-3")
+                  (create-shark screen "shark-4")
+                  (create-shark screen "shark-5")
+                  (create-shark screen "shark-6")
+                  ]
           volcs [(create-volcano screen "volcano-1" "fire.p")
                  (create-volcano screen "volcano-2" "fire2.p")
                  ]
@@ -287,6 +287,7 @@
       (add-timer! screen :eruption-2 6 5)
       (concat [player rope sword floaty wand lava-step pool-shark]
               spiders
+              sharks
               volcs
               attacks)))
   
@@ -369,8 +370,8 @@
                     ))
         :wand (if (:invisible? player)
                 player
-                (do (narrate "")
-                    (add-timer! screen :visible-again 3.5)
+                (do (narrate "Abracadabra! It's working!")
+                    (add-timer! screen :visible-again 30)
                     (update-by-id entities :player
                                   assoc :invisible? true :color [0 0 0 0.5])))
         :lava-step (if (touching-layer? screen player "lava")
@@ -379,19 +380,19 @@
                          nil
                        )
                      (do (narrate "Be careful! Don't drop it on your foot!!!")
-                       ))
+                          ))
         )))
   
   :on-solve-riddle
   (fn [screen entities]
     (when-let [player (find-by-id :player entities)]
-      (case (count (:riddles-done player))
+      (case (count (:keys-won player))
         0 (narrate "Your first triumph has come!")
         1 (narrate "Two's the one!")
         2 (narrate "tut tut! 3333!")
         3 (narrate "You've done it!!!")
         )
-      (let [health (max 100 (+ (:health player) 10))]
+      (let [health (min 100 (+ (:health player) 10))]
         (screen! status-screen :on-update-health :health health)
         (update-by-id entities :player
                       (fn [e]

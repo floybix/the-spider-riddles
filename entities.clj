@@ -65,6 +65,7 @@
         attack (texture "shark-front-bite.png")]
     (-> (create-character float-layers fin fin fin fin)
         (assoc :shark? true
+               :focus-point [(+ 1 (:x obj-info)) (+ 1 (:y obj-info))]
                :angle 0
                :up nil
                :down nil

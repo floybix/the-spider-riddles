@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="90" height="70" tilewidth="32" tileheight="32" nextobjectid="24">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="90" height="70" tilewidth="32" tileheight="32" nextobjectid="31">
  <tileset firstgid="1" name="terrain_atlas" tilewidth="32" tileheight="32">
   <image source="terrain_atlas.png" width="1024" height="1024"/>
   <terraintypes>
@@ -150,7 +150,7 @@
  </layer>
  <layer name="path" width="90" height="70">
   <data encoding="base64" compression="zlib">
-   eJztnFtywyAMRdlCs5NkJW1WknYlaVdcMxlNNRSweUky3DPDV5wYH/OQjIlzYCbet/LRqdyF694C1VmKx1Y+O5UvwXq3QnWWgjy/beW7sfwI1rsG6rs393fNUpDnM7XFWnjf9Y4l28Uqnn1b5u1Yuu+t4pm3ZY1rXc2zRlvm51/Fs9Z1ap9fCu3r1D6/BHwOhOdxSM6Bqfxa+z6PRjqe28uvZ/UsHWfs5dfWc+ZapMfFFcbhGPAsw4yeaa619Bx6Rs/W+kxL3Fy7/kHnu1Z+P1bCdmvN89O95viLK69Tz/WP1hLW3Zpnwvsujad6rn/Ulos7l+caLFxLqg4W6tZKuLYFz2MIx2V4HgOfO8O4IUUsNgk5GktwZvZMxOKNlmP5vTvaX1byzOONFE/3P1Y4elwuDlrJM8bnsVDbk3yOGY7zqdzSQix0ZkpzUHiuozQHnXXNYDQzjbuWgWcZ4FkGeJYBnmWAZxnIM+UlltZZZyLMU+B7DOEzWeR9Y/G+uWt4Hof2Po9V0N7nsQqI8WSAZxngWQaes6wcP+fec7zvHHPEG+KNF7k1Jsrjbjufh875feHfXdlz7B2B2PsZFJulPuPOY/dFO65r6ZOjiLmndbyS+8LXCLVj51i/1b73peTcWxgrwj2Bltd/S/cFWHg3I/Z/MBbdcmr3BWh4Dv2exbGndl/AqGvL9a9wHj6LY4+1vG6vf1kfh1NY8kzzWq5vncktx5JnS3XpjcZ7pylm9mwJeJYBnmWA5zg9/mOXP++B5xepfRMt5Rr5vdU9p3KI0lzSl9yzwNU9556r9votKzEmAADs8Qv/V2oe
+   eJztnO1tAyEMhm+FdpNkkjaTtJ2k7cQ9FFm1LAPHl23Aj+RfueTgBYzNR47DWYm309472UO47C1AmaX4OO2zk30JlrsVKLMUoPPLaT+N9itY7hpg7N6P/zpLATrP1BdrwWM3aCzZL3bROfRl3I+lx94uOuO+rFHX3XTW6Mv4/bvorFVP7fdLoV1P7fdLgOdA13kcknNgLL/WbufRSMdzufx6VZ2l44xcfm09Z65F2i/u4Ic5VtOZ+n8ra6Sr6Uz9v5Vxs5rO36e9Hrq5LYaugZbWu3b/A953q/w+Z9Q3WJoDWsdXz/2PVqNlt6RzGF8t8VTP/Y9aA/9gWedWLNQlVgYLZWul1a/3ZGWdLcVNK+sMfh18I44bYnCxCeVqLIFZWWeAizdansVtd3W87KQzjjdi0Ngm9iz3XCoO2kln989jgb4nmddSPx/LLS3EQjNTmoO6znWU5qDaa0izspLftYzrLIPrLIPrLIPrLIPrLAPoDHmJlb3s1aB5ius9Brom63nfWPDZAdd5LNr3PHZB+57HLniMJ4PrLIPrLAPOWXaOn1PnHB+ZZ67o5vHGk9QeE+Rx98znVHPcLvi7FnTWOt/OnRHgzmdAbBb7DGvOtYt2XEfPwVloe0572McraRe8R6gdO3PjVrvtS0lpb8VX4DuBlvd/S+8FWDibwf0fjEVtMbX3AjR05nzxDBoHau8FjKpbanzRuW4WjQPW8rrc+LLuh2NY0hnmtdTYmklbjCWdLZWlNxrnTmOsrLMlXGcZXGcZXGeeHv+xi9fVXOcnsXsTLXZjfm93nWM5RGkuGSy1Fri7zql11V6/ZSXGdBzHyfEHrlxx4g==
   </data>
  </layer>
  <layer name="pits" width="90" height="70">
@@ -212,5 +212,12 @@
   <object id="18" name="wand" gid="2051" x="1393.14" y="112.019"/>
   <object id="20" name="key" gid="2056" x="103.232" y="927.415"/>
   <object id="21" name="spider-3" gid="2054" x="469.114" y="1612.28"/>
+  <object id="24" name="shark-1" gid="2052" x="2617.81" y="757.661"/>
+  <object id="25" name="shark-2" gid="2052" x="2268.11" y="867.659"/>
+  <object id="26" name="shark-3" gid="2052" x="2103.94" y="1342.13"/>
+  <object id="27" name="shark-4" gid="2052" x="2688.41" y="1191.09"/>
+  <object id="28" name="shark-5" gid="2052" x="2511.1" y="1514.52"/>
+  <object id="29" name="shark-6" gid="2052" x="2366.62" y="1143.48"/>
+  <object id="30" name="spider-4" gid="2054" x="2391.25" y="1672.12"/>
  </objectgroup>
 </map>
