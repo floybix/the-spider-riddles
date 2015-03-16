@@ -210,12 +210,14 @@
                    (assoc (create-spider screen "spider-2")
                           :riddle (str "First, what do you say when you want quiet, "
                                        "then what was build when the flood came; "
-                                       "these things I want to know, so tell me quick."
+                                       "these things I want to know, so tell me quick. "
                                        "Put them together and what do you get?")
                           :answer "shark")
                    (assoc (create-spider screen "spider-3")
-                          :riddle (str "" )
-                          :answer "black spider")]
+                          :riddle (str "Help me and my sisters find the thing we lost. " 
+                                       "We think we've misplaced our \"padless brick\", "
+                                       "but maybe it's just us.")
+                          :answer "black spiders")]
           rope (assoc (create-entity-from-object-layer screen "rope")
                       :item? true
                       :in-pits? true)

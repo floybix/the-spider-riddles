@@ -168,7 +168,7 @@
    eJzt1N0JwjAUgNF0A3WS6iStk1g31U10AhNoaIgWSenjORD6py8flxsCAAAAAAAAAAAAAAAAAAAAAAAAAAB7OnQhHFfOqVu+p3u2SQ3f8XqL1/N87sX9KyzfLzo3yzOaGuamU9W4bJ+bm+k2fdWxblo+T1pvNsRWz/DdsWxcv8+zbn+0KVv/mum1Y6bb9X9md21nm+k2/Y95rZvX7R/xf1edm6TdMc77o94b5UyntuP8W423K3uXTfP+tif2NVTzOphhdvYBhHAslw==
   </data>
  </layer>
- <layer name="stepping" width="90" height="70" visible="0">
+ <layer name="stepping" width="90" height="70">
   <data encoding="base64" compression="zlib">
    eJzt0rENADAIA0Gy/7gsQEGdEorkTvICL0cAAAAAAAAAAAAAAAAAAAAAAAAAAADc5ekxS2d+4u87dAaAtxWrdgeh
   </data>
