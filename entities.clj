@@ -17,15 +17,12 @@
   (let [obj (-> (map-layer screen "entities")
                 (map-objects)
                 (.get obj-name))
-        img (-> (tiled-map! screen :get-tile-sets)
-                 (.getTile (-> (.getProperties obj) (.get "gid")))
-                 (.getTextureRegion)
-                 (texture))
-        rect (.getRectangle obj)]
+        img (-> (.getTextureRegion obj)
+                (texture))]
     (assoc img
            :id (keyword obj-name)
-           :x (/ (.x rect) pixels-per-tile)
-           :y (/ (.y rect) pixels-per-tile)
+           :x (/ (.getX obj) pixels-per-tile)
+           :y (/ (.getY obj) pixels-per-tile)
            :width (/ (texture! img :get-region-width) pixels-per-tile)
            :height (/ (texture! img :get-region-height) pixels-per-tile))))
 

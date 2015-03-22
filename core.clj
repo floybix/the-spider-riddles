@@ -625,8 +625,9 @@
   (fn [screen entities]
     (when (= :spider @current-screen-k)
       (clear! 0.2 0.2 0.2 1)
+      (render! screen)
       (->> entities
-        (render! screen))))
+        (draw! screen))))
   
   :on-enter
   (fn [screen entities]
