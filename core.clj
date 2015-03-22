@@ -243,8 +243,8 @@
                                        "but maybe it's just us.")
                           :answer "black spiders")
                    (assoc (create-spider screen "spider-4")
-                          :riddle (str "")
-                          :answer "")]
+                          :riddle (str "Decode and answer this: hatw anc ouy od ithw a andw?")
+                          :answer "magic")]
           rope (assoc (create-entity-from-object-layer screen "rope")
                       :item? true
                       :in-pits? true)
@@ -281,11 +281,15 @@
                      :attack? true
                      :x 0 :y 0 :width 1 :height 1)
                    ]
+          house (assoc (texture "candy-house.png")
+                       :id :candy-house
+                       :x 0 :y (- (dec map-height) 25)
+                       :width 5 :height 6)
           ]
       (extract-lava-step-cells! screen)
       (add-timer! screen :eruption-1 5 5)
       (add-timer! screen :eruption-2 6 5)
-      (concat [player rope sword floaty wand lava-step pool-shark]
+      (concat [player rope sword floaty wand lava-step pool-shark house]
               spiders
               sharks
               volcs
@@ -597,11 +601,11 @@
                         :width 200)
         response-but (assoc (text-button " Reply " ui-skin)
                             :id :response-button
-                            :x (+ (:x response) 50)
+                            :x (- (width screen) 170)
                             :y (- (:y response) 30))
         give-up-but (assoc (text-button "give up" ui-skin)
                             :id :give-up-button
-                            :x (+ (:x response) 120)
+                            :x (- (width screen) 100)
                             :y (- (:y response) 30))]
     [spider-bubble spider-speech response response-but give-up-but]))
   
@@ -685,7 +689,13 @@
   
   :on-resize
   (fn [screen entities]
-    (height! screen 600))
+    (height! screen 600)
+    (for [e entities]
+      (case (:id e)
+         :response-field (assoc e :x (- (width screen) 220))
+         :response-button ( assoc e :x (- (width screen) 170))
+         :give-up-button (assoc e :x (- (width screen) 100))
+        e)))
   )
 
 (set-game-screen! main-screen spider-screen status-screen)
