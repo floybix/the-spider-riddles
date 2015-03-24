@@ -85,6 +85,7 @@
            :id :player
            :health 100
            :riddles-done #{}
+           :keys-won #{}
            :float float
            :hurt-sound (sound "player_hurt.wav")
            :death-sound (sound "player_death.wav"))))

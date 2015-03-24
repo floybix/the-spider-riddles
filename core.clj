@@ -381,6 +381,7 @@
         :lava-step (if (touching-layer? screen player "lava")
                      (do (narrate "Hop, skip and jump!!!")
                          (place-lava-step-cells! screen)
+                         (screen! status-screen :on-lose-item :item-id :lava-step)
                          nil
                        )
                      (do (narrate "Be careful! Don't drop it on your foot!!!")
@@ -396,8 +397,10 @@
         2 (narrate "tut tut! 3333!")
         3 (narrate "You've done it!!!")
         )
-      (let [health (min 100 (+ (:health player) 10))]
+      (let [health (min 100 (+ (:health player) 10))
+            num-keys (+ 1 (count (:keys-won player)))]
         (screen! status-screen :on-update-health :health health)
+        (screen! status-screen :on-update-keys :num-key num-keys)
         (update-by-id entities :player
                       (fn [e]
                         (-> e
@@ -405,7 +408,6 @@
                             (update-in [:keys-won] conj (:spider-id screen))
                             (assoc :health health)))))
       )
-    ;; TODO key
     )
   
   :on-give-up-riddle
@@ -447,6 +449,7 @@
 ;;;; status screen - items, health
 
 (def button->item-id (atom {}))
+(def item-id->table-obj (atom {}))
 
 (defscreen status-screen
   :on-show
@@ -456,6 +459,14 @@
       [(assoc (vertical [] :left :reverse)
               :id :item-table
               :y 0)
+       (assoc (label "0" (color :white))
+              :id :key-text
+              :x (/ (width screen) 2 ) :y 10)
+       (assoc (texture "key.png")
+                       :id :key
+                       :x (- (/ (width screen) 2) 35)
+                       :y -3
+                       :width 36 :height 36)
        (assoc (label "health 100" (color :yellow))
               :id :health-text
               :x (- (width screen) 100) :y 10)
@@ -490,6 +501,13 @@
                                                     (:health screen))))
         e)))
   
+  :on-update-keys  
+  (fn [screen entities]
+    (for [e entities]
+      (case (:id e)
+        :key-text (doto e (label! :set-text (str (:num-key screen))))
+        e)))
+  
   ;; when calling this, give :which-entity with the entity
   :on-pick-up-item
   (fn [screen entities]
@@ -508,7 +526,15 @@
         :wand (narrate "A wand! Do some magic!")
         :lava-step (narrate "You find a big stepping stone!"))
       (swap! button->item-id assoc (:object button) (:id e))
+      (swap! item-id->table-obj assoc (:id e) (:object held-e))
       (add! item-table held-e)
+      entities))
+  
+  :on-lose-item
+  (fn [screen entities]
+    (let [table-obj (get @item-id->table-obj (:item-id screen))
+          item-table (find-by-id :item-table entities)]
+      (vertical! item-table :remove-actor table-obj)
       entities))
   
   :on-ui-changed
@@ -516,16 +542,6 @@
     (let [item-id (get @button->item-id (:actor screen))]
       (screen! main-screen :on-use-item :item-id item-id)
       entities))
-  
-  :on-key-down
-  (fn [screen entities]
-    (let [item-ids (vals @button->item-id)]
-      (cond
-        (= (:key screen) (key-code :num-1))
-        (do (screen! main-screen :on-use-item :item-id
-                     (nth item-ids 0))
-          entities)
-        )))
   
   :on-narration
   (fn [screen entities]
