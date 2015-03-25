@@ -139,6 +139,9 @@
                  (on-layer-ok? screen entity "lava")
                  (not (touching-layer? screen entity "stepping")))
             (burn (find-by-id :burn entities))
+            ;; slow down to use rope on bridges
+            (on-layer-ok? screen entity "bridges")
+            (update-in [:y-velocity] / 2)
             ))
    ;; spiders
    (:spider? entity)
