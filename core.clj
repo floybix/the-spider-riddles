@@ -69,8 +69,7 @@
                ;; something we can touch?
                (if (or (:player? e)
                        (not (near-entity? player e 1))
-                       (and (not (:attack? e))
-                            (not= (:in-pits? e) (:in-pits? player))))
+                       (not= (:in-pits? e) (:in-pits? player)))
                  entities
                  ;; can touch
                  (cond
@@ -141,7 +140,7 @@
             (burn (find-by-id :burn entities))
             ;; slow down to use rope on bridges
             (on-layer-ok? screen entity "bridges")
-            (update-in [:y-velocity] / 2)
+            (slow-down)
             ))
    ;; spiders
    (:spider? entity)
@@ -308,15 +307,20 @@
       :visible-again
       (update-by-id entities :player assoc :invisible? false :color nil)
       :poison-spit
-      (when-let [spider (find-first #(and (:spider? %) (:spitting? %)) entities)]
+      (when-let [spider (find-first (fn [e]
+                                      (and (:spider? e) (:spitting? e)))
+                                    entities)]
         (let [player (find-by-id :player entities)]
           (add-timer! screen :poison-spit-done 4)
           (update-by-id entities :poison (fn [e]
                                            (particle-effect! e :start)
-                                           (assoc e :x (:x spider)
+                                           (assoc e
+                                                  :x (:x spider)
                                                   :y (:y spider)
                                                   :x-velocity (* 5.0 (- (:x player) (:x spider)))
-                                                  :y-velocity (* 5.0 (- (:y player) (:y spider))))))))
+                                                  :y-velocity (* 5.0 (- (:y player) (:y spider)))
+                                                  :in-pits? (:in-pits? spider)
+                                                  :walk-layers (if (:in-pits? spider) #{"pits"}))))))
       :poison-spit-done
       (for [e entities]
         (cond

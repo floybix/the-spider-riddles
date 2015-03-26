@@ -52,6 +52,7 @@
         down (texture "spider-front.png")]
     (-> (create-character #{"path"} down down down down)
         (assoc :spider? true
+               :chasing? true
                :hurt-sound (sound "enemy_hurt.wav"))
         (merge (select-keys obj-info [:id :x :y])))))
 

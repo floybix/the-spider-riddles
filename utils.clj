@@ -99,6 +99,14 @@
                     (min max-velocity)
                     (max (- max-velocity)))))
 
+(defn slow-down
+  [entity]
+ (assoc entity
+        :x-velocity (/ (:x-velocity entity) 2)
+        :y-velocity (/ (:y-velocity entity) 2)))
+ 
+  
+  
 (defn decelerate
   [velocity]
   (let [velocity (* velocity deceleration)]
