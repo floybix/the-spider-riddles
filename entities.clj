@@ -154,7 +154,7 @@
 
 (defn prevent-move
   [screen entities entity]
-  (if (or (not (:character? entity))
+  (if (or (not (:walk-layers entity))
           (and (zero? (:x-change entity 0))
                (zero? (:y-change entity 0))))
     entity

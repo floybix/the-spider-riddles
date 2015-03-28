@@ -81,9 +81,6 @@
                   ;; meet spiders
                   (:spider? e)
                   (cond
-                   ;; attack
-                   (:chasing? e)
-                   entities
                    ;; already done this spider's riddle, ignore it
                    (get (:riddles-done player) (:id e))
                    entities
@@ -100,7 +97,10 @@
                     (update-by-id (:id e) assoc :biting? true))
                   ;; meet poison
                   (= :poison (:id e))
-                  (update-by-id entities :player poisoning (find-by-id :poison entities))
+                  (if (particle-effect! e :is-complete)
+                    ;; finished, ignore
+                    entities
+                    (update-by-id entities :player poisoning (find-by-id :poison entities)))
                   ;; meet volcanos
                   (:volcano? e)
                   (if (particle-effect! e :is-complete)
@@ -145,9 +145,6 @@
    ;; spiders
    (:spider? entity)
    (cond
-    (and (:chasing? entity) (not (:spitting? entity)))
-    (do (add-timer! screen :poison-spit 0.1)
-      (assoc entity :spitting? true))
     (:chasing? entity)
     (chase entity (find-by-id :player entities))
     :else
@@ -224,7 +221,7 @@
     (let [renderer (orthogonal-tiled-map "level.tmx" (/ 1 pixels-per-tile))
           screen (update! screen :camera (orthographic) :renderer renderer)
           player (assoc (create-player)
-                        :x 5 :y (- (dec map-height) 24))
+                        :x 4 :y (- (dec map-height) 24))
           spiders [(assoc (create-spider screen "spider-1")
                           :walk-layers #{"pits"}
                           :in-pits? true
@@ -291,6 +288,7 @@
       (extract-lava-step-cells! screen)
       (add-timer! screen :eruption-1 5 5)
       (add-timer! screen :eruption-2 6 5)
+      (add-timer! screen :poison-spit 5 5)
       (concat [player rope sword floaty wand lava-step pool-shark house]
               spiders
               sharks
@@ -307,10 +305,11 @@
       :visible-again
       (update-by-id entities :player assoc :invisible? false :color nil)
       :poison-spit
-      (when-let [spider (find-first (fn [e]
-                                      (and (:spider? e) (:spitting? e)))
+      (let [player (find-by-id :player entities)]
+        (when-let [spider (find-first (fn [e]
+                                        (and (:spider? e) (:chasing? e)
+                                             (near-entity? player e 10)))
                                     entities)]
-        (let [player (find-by-id :player entities)]
           (add-timer! screen :poison-spit-done 4)
           (update-by-id entities :poison (fn [e]
                                            (particle-effect! e :start)
@@ -319,12 +318,12 @@
                                                   :y (:y spider)
                                                   :x-velocity (* 5.0 (- (:x player) (:x spider)))
                                                   :y-velocity (* 5.0 (- (:y player) (:y spider)))
-                                                  :in-pits? (:in-pits? spider)
-                                                  :walk-layers (if (:in-pits? spider) #{"pits"}))))))
+                                                  :in-pits? (:in-pits? player)
+                                                  ;:walk-layers (if (:in-pits? spider) #{"pits"})
+                                                  )))))
       :poison-spit-done
       (for [e entities]
         (cond
-          (:spider? e) (assoc e :spitting? false)
           (:player? e) (assoc e :poisoning? false)
           :else e))
       ))
@@ -404,18 +403,25 @@
         2 (narrate "tut tut! 3333!")
         3 (narrate "You've done it!!!")
         )
-      (let [health (min 100 (+ (:health player) 10))
+      (let [health (min 100 (+ (:health player) 20))
             num-keys (+ 1 (count (:keys-won player)))]
         (screen! status-screen :on-update-health :health health)
         (screen! status-screen :on-update-keys :num-key num-keys)
-        (update-by-id entities :player
+        (-> entities
+          (update-by-id :player
                       (fn [e]
                         (-> e
                             (update-in [:riddles-done] conj (:spider-id screen))
                             (update-in [:keys-won] conj (:spider-id screen))
-                            (assoc :health health)))))
+                            (assoc :health health))))
+           (update-by-id (:spider-id screen)
+                        assoc :chasing? false)
+           ;; turn off poison so there is a chance to move away
+           (update-by-id :poison
+                        (fn [e] (doto (assoc e :x 0 :y 0)
+                                  (particle-effect! :update 10)))))
       )
-    )
+    ))
   
   :on-give-up-riddle
   (fn [screen entities]
@@ -424,8 +430,11 @@
       (-> entities
           (update-by-id :player
                         update-in [:riddles-done] conj (:spider-id screen))
-          (update-by-id (:spider-id screen)
-                        assoc :chasing? true))))
+          ;; turn off poison so there is a chance to move away
+          (update-by-id :poison
+                        (fn [e] (doto (assoc e :x 0 :y 0)
+                                  (particle-effect! :update 10))))
+          )))
 
   :on-game-over
   (fn [screen entities]
