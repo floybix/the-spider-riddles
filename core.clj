@@ -158,6 +158,7 @@
             (not (:bleeding? player)))
        (assoc entity :biting? false)
        (and (:floating? player)
+            (near-entity? player entity 8)
             (not (:invisible? player)))
        (chase entity player)
        ;; otherwise - go round in circles
