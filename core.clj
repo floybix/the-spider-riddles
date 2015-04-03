@@ -5,6 +5,7 @@
 ;; one of :main, :spider
 (def current-screen-k (atom :main))
 
+
 (defn narrate
   [text]
   (screen! status-screen :on-narration :say text))
@@ -228,22 +229,26 @@
                           :riddle (str "First tell me where you battle and fight, "
                                        "then what is in the middle of battle, "
                                        "and what sounds like the search for a hard to find word. "
-                                       "Put them together to make something hard to pick up.")
-                          :answer "water")
+                                      "Put them together to make something hard to pick up.")
+                          :answer "water"
+                          :hint "It starts with \"w\".")
                    (assoc (create-spider screen "spider-2")
                           :riddle (str "First, what do you say when you want quiet, "
-                                       "then what was build when the flood came; "
+                                       "then what was built when the flood came; "
                                        "these things I want to know, so tell me quick. "
                                        "Put them together and what do you get?")
-                          :answer "shark")
+                          :answer "shark"
+                          :hint "It bites!")
                    (assoc (create-spider screen "spider-3")
                           :riddle (str "Help me and my sisters find the thing we lost. " 
                                        "We think we've misplaced our \"padless brick\", "
                                        "but maybe it's just us.")
-                          :answer "black spiders")
+                          :answer "black spiders"
+                          :hint "Remember, I'm a spider")
                    (assoc (create-spider screen "spider-4")
                           :riddle (str "Decode and answer this: hatw anc ouy od ithw a andw?")
-                          :answer "magic")]
+                          :answer "magic"
+                          :hint "It's easy, you don't need a hint")]
           rope (assoc (create-entity-from-object-layer screen "rope")
                       :item? true
                       :in-pits? true)
@@ -628,19 +633,30 @@
         response (assoc (text-field "" ui-skin
                                     :set-alignment (align :left))
                         :id :response-field
-                        :x (- (width screen) 220)
                         :y 400
                         :width 200)
-        response-but (assoc (text-button " Reply " ui-skin)
+        response-but (assoc (text-button "Reply" ui-skin)
                             :id :response-button
-                            :x (- (width screen) 170)
                             :y (- (:y response) 30))
         give-up-but (assoc (text-button "give up" ui-skin)
                             :id :give-up-button
-                            :x (- (width screen) 100)
+                            :y (- (:y response) 30))
+        hint-but (assoc (text-button "hint" ui-skin)
+                            :id :hint-button
                             :y (- (:y response) 30))]
-    [spider-bubble spider-speech response response-but give-up-but]))
-  
+    [spider-bubble spider-speech response response-but give-up-but hint-but]))
+
+(defn place-speech-buttons
+  [entities screen]
+  (for [e entities]
+      (case (:id e)
+         :response-field (assoc e :x (- (width screen) 250))
+         :response-button ( assoc e :x (- (width screen) 250))
+         :give-up-button (assoc e :x (- (width screen) 120))
+         :hint-button (assoc e :x (- (width screen ) 200))
+        e)
+      ))
+
 (defn spider-say!
   [entities text]
   (label! (find-by-id :spider-speech entities)
@@ -697,38 +713,42 @@
   (fn [screen entities]
     (stage! screen :set-keyboard-focus nil)
     (when-let [player (find-by-id :player entities)]
-      (if (= (:actor screen) (:object (find-by-id :response-button entities)))
-          (let [field (find-by-id :response-field entities)
-                wrote (-> (text-field! field :get-text)
-                        (clojure.string/lower-case)
-                        (clojure.string/trim))
-                spider (find-first :spider? entities)]
-            (if (= wrote (:answer spider))
-              (do
-                (spider-say! entities "Correct.")
-                (add-timer! screen :solved-riddle 2)
-                entities)
-              (do
-                (spider-say! entities "Wrong.")
-                (add-timer! screen :say-riddle 2)
-                entities)
-              ))
-          ;; gave up
-          (do
-            (spider-say! entities "You... I want you...!")
-            (add-timer! screen :give-up 2)
-            entities)
-          )))
+      (cond
+        ;; replied
+        (= (:actor screen) (:object (find-by-id :response-button entities)))
+        (let [field (find-by-id :response-field entities)
+              wrote (-> (text-field! field :get-text)
+                      (clojure.string/lower-case)
+                      (clojure.string/trim))
+              spider (find-first :spider? entities)]
+          (if (= wrote (:answer spider))
+            (do
+              (spider-say! entities "Correct.")
+              (add-timer! screen :solved-riddle 2)
+              entities)
+            (do
+              (spider-say! entities "Wrong.")
+              (add-timer! screen :say-riddle 2)
+              entities)
+            ))
+        ;; gave up
+        (= (:actor screen) (:object (find-by-id :give-up-button entities)))
+        (do
+          (spider-say! entities "You... I want you...!")
+          (add-timer! screen :give-up 2)
+          entities)
+        ;; hint
+        (= (:actor screen) (:object (find-by-id :hint-button entities)))
+        (let [spider (find-first :spider? entities)]
+          (spider-say! entities (:hint spider))
+          (add-timer! screen :say-riddle 2)
+          entities)
+        )))
   
   :on-resize
   (fn [screen entities]
     (height! screen 600)
-    (for [e entities]
-      (case (:id e)
-         :response-field (assoc e :x (- (width screen) 220))
-         :response-button ( assoc e :x (- (width screen) 170))
-         :give-up-button (assoc e :x (- (width screen) 100))
-        e)))
+    (place-speech-buttons entities screen))
   )
 
 (set-game-screen! main-screen spider-screen status-screen)
