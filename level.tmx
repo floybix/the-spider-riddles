@@ -180,11 +180,6 @@
    eJzt2DEOgkAUBNDlrsJJ1HNsod6Q3k+lIWg0+hcl7yXbUZAphllKAQAAAAAAAP7VriuljzN0a7/Jtu0j30Oco5xTnSLfc5yLnAF+lu3Rhu2RY+xuZ2J75BjlmUoPt6GH29DDAECW+f3Pjs4xv//Z0TnmOdvR3/VKP+iQzy31w31PP3qG9yz1gw5hK/x3bkPObci5jfjm1dgXNbZcXftdtix2RY0NV3s5p4rtVmMn10HOAAAAAAAAwBNXC8g1BQ==
   </data>
  </layer>
- <layer name="door" width="90" height="70">
-  <data encoding="base64" compression="zlib">
-   eJzt0EENACAMALH98P8BJ+AE7DATZAlpFVwugpd6ixituuJ/Mx8vn5/b+fj4DAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQ7gKXXgRy
-  </data>
- </layer>
  <layer name="bridges" width="90" height="70">
   <data encoding="base64" compression="zlib">
    eJzt0DEOgCAQRNHNnlk5CRqPK42NQrDnvWS6X00EAAAAAAAAAADw2DJiH6zkv/bd8VXbR8dgZ/bba9IBAAAAAAAAAAAAAAAAAACs5AZ3lw/W

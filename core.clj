@@ -59,6 +59,7 @@
       (narrate "Wait a second... is this poison...? It is!")
       (screen! status-screen :on-update-health :health health)
       (assoc player :poisoning? true
+             :color [0.5 1 0.5 1]
              :health health))))
 
 (defn interact
@@ -79,6 +80,16 @@
                   (do (screen! status-screen :on-pick-up-item :which-entity e)
                       ;; remove from screen
                       (remove #(= (:id %) (:id e)) entities))
+                  ;; door
+                  (= :door (:id e))
+                  (let [player (find-by-id :player entities)]
+                    (do
+                      (if (= 4 (count (:keys-won player)))
+                        (do
+                          (narrate "YOU DID IT!")
+                          (screen! status-screen :on-win-game))
+                        (narrate "Oh no, need more keys..."))
+                      entities))
                   ;; meet spiders
                   (:spider? e)
                   (cond
@@ -290,12 +301,17 @@
                        :id :candy-house
                        :x 0 :y (- (dec map-height) 25)
                        :width 5 :height 6)
+          door (assoc (texture "door.png")
+                       :id :door
+                       :x (- map-width 2)
+                       :y (- map-height 3)
+                       :width 2 :height 3)
           ]
       (extract-lava-step-cells! screen)
       (add-timer! screen :eruption-1 5 5)
       (add-timer! screen :eruption-2 6 5)
       (add-timer! screen :poison-spit 5 5)
-      (concat [player rope sword floaty wand lava-step pool-shark house]
+      (concat [player rope sword floaty wand lava-step pool-shark house door]
               spiders
               sharks
               volcs
@@ -330,7 +346,7 @@
       :poison-spit-done
       (for [e entities]
         (cond
-          (:player? e) (assoc e :poisoning? false)
+          (:player? e) (assoc e :poisoning? false :color nil)
           :else e))
       ))
   
@@ -581,6 +597,18 @@
             :y (/ (height screen) 2)
             :set-font-scale 10
             :set-alignment (align :center))))
+  
+  :on-win-game
+  (fn [screen entities]
+    (into entities
+       [(assoc (particle-effect "firework.p" :scale-effect 1.0)
+               :id :firework-1
+               :firework? true
+               :x (* (width screen) 0.3) :y 0)
+        (assoc (particle-effect "firework.p" :scale-effect 1.0)
+               :id :firework-2
+               :firework? true
+               :x (* (width screen) 0.7) :y 100)]))
 
   :on-render
   (fn [screen entities]
